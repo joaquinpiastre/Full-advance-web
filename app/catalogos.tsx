@@ -45,7 +45,7 @@ const CATALOGOS: CatalogoMarca[] = [
     catalogos: [{ label: 'Ver catálogo', url: '/catalogos/angiola.pdf' }],
   },
   { nombre: 'Rikitos', color: '#7C3AED', icono: 'fast-food-outline' },
-  { nombre: 'Citric', color: '#0D9488', icono: 'leaf-outline' },
+  { nombre: 'Citric', color: '#0D9488', icono: 'leaf-outline', logo: require('../assets/citric-logo.jpg') },
 ];
 
 export default function Catalogos() {

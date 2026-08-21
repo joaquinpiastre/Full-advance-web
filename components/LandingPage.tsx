@@ -56,6 +56,7 @@ const MARCAS: Marca[] = [
     icono: 'leaf-outline',
     descripcion: 'Jugos y bebidas cítricas para todo momento.',
     productos: ['Jugos', 'Bebidas cítricas'],
+    logo: require('../assets/citric-logo.jpg'),
   },
 ];
 
