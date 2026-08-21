@@ -50,6 +50,13 @@ const MARCAS: Marca[] = [
     descripcion: 'Snacks y golosinas para todo momento.',
     productos: ['Papas fritas', 'Palitos salados', 'Snacks', 'Golosinas'],
   },
+  {
+    nombre: 'Citric',
+    color: '#0D9488',
+    icono: 'leaf-outline',
+    descripcion: 'Jugos y bebidas cítricas para todo momento.',
+    productos: ['Jugos', 'Bebidas cítricas'],
+  },
 ];
 
 const TRUST_BADGES = [
@@ -62,7 +69,7 @@ const ESTADISTICAS = [
   { icono: 'storefront-outline' as const, valor: '+1000', label: 'Comercios visitados' },
   { icono: 'bus-outline' as const, valor: 'Flota propia', label: 'Distribución diaria' },
   { icono: 'map-outline' as const, valor: 'Sur de Mendoza', label: 'Zona de cobertura' },
-  { icono: 'pricetags-outline' as const, valor: '4 marcas', label: 'Líderes en consumo masivo' },
+  { icono: 'pricetags-outline' as const, valor: '5 marcas', label: 'Líderes en consumo masivo' },
 ];
 
 const PROCESO = [
@@ -195,7 +202,7 @@ export default function LandingPage() {
           <Text style={[styles.heroTitle, { fontSize: isDesktop ? 34 : isTablet ? 29 : isNarrow ? 22 : 25 }]}>
             Distribuidora oficial en el sur de Mendoza
           </Text>
-          <Text style={styles.heroSubtitle}>Bimbo · Palluzi · Angiola · Rikitos</Text>
+          <Text style={styles.heroSubtitle}>Bimbo · Palluzi · Angiola · Rikitos · Citric</Text>
           <Text style={styles.heroParagraph}>
             Llevamos los productos de las marcas más elegidas a más de 1000 comercios,
             con flota propia y logística pensada para que nunca te falte mercadería.

@@ -51,10 +51,10 @@ export const SHADOW = {
   },
 } as const;
 
-// Depósito de Full Advance: Sarmiento 4777, Las Paredes, San Rafael, Mendoza
-// (geocodificado vía OpenStreetMap Nominatim sobre Av. Sarmiento, Capitán Montoya, Distrito Las Paredes)
+// Depósito de Full Advance: Av. Sarmiento 4777, Las Paredes, San Rafael, Mendoza
+// (coordenadas tomadas del pin de Google Maps compartido por el cliente)
 export const UBICACION_FULL_ADVANCE = {
-  latitude: -34.5856,
-  longitude: -68.4499,
-  direccion: 'Sarmiento 4777, Las Paredes, San Rafael, Mendoza',
+  latitude: -34.6054366,
+  longitude: -68.3917533,
+  direccion: 'Av. Sarmiento 4777, Las Paredes, San Rafael, Mendoza',
 };
