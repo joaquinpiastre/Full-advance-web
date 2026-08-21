@@ -4,21 +4,48 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SHADOW } from '../constants';
 
+type CatalogoLink = {
+  label: string;
+  url: string;
+};
+
 type CatalogoMarca = {
   nombre: string;
   color: string;
   icono: keyof typeof Ionicons.glyphMap;
   logo?: any;
-  // Cuando tengas el catálogo de cada marca (PDF, link de Drive, etc.) completá esta URL
-  // y la tarjeta pasa a mostrar el botón "Ver catálogo" en vez de "Próximamente".
-  catalogoUrl?: string;
+  // Cuando tengas el catálogo de cada marca (PDF, link de Drive, etc.) completá esta lista
+  // y la tarjeta pasa a mostrar el/los botón/es "Ver catálogo" en vez de "Próximamente".
+  catalogos?: CatalogoLink[];
 };
 
 const CATALOGOS: CatalogoMarca[] = [
-  { nombre: 'Bimbo', color: '#E31E24', icono: 'nutrition-outline', logo: require('../assets/bimbo-logo.jpg') },
-  { nombre: 'Palluzi', color: '#7C2D12', icono: 'restaurant-outline', logo: require('../assets/palluzi-logo.jpg') },
-  { nombre: 'Angiola', color: '#D97706', icono: 'pizza-outline', logo: require('../assets/angiola-logo.jpg') },
+  {
+    nombre: 'Bimbo',
+    color: '#E31E24',
+    icono: 'nutrition-outline',
+    logo: require('../assets/bimbo-logo.jpg'),
+    catalogos: [
+      { label: 'Catálogo de productos', url: '/catalogos/bimbo-productos.pdf' },
+      { label: 'Catálogo gastronómico', url: '/catalogos/bimbo-gastronomico.pdf' },
+    ],
+  },
+  {
+    nombre: 'Palluzi',
+    color: '#7C2D12',
+    icono: 'restaurant-outline',
+    logo: require('../assets/palluzi-logo.jpg'),
+    catalogos: [{ label: 'Ver catálogo', url: '/catalogos/palluzi.pdf' }],
+  },
+  {
+    nombre: 'Angiola',
+    color: '#D97706',
+    icono: 'pizza-outline',
+    logo: require('../assets/angiola-logo.jpg'),
+    catalogos: [{ label: 'Ver catálogo', url: '/catalogos/angiola.pdf' }],
+  },
   { nombre: 'Rikitos', color: '#7C3AED', icono: 'fast-food-outline' },
+  { nombre: 'Citryc', color: '#0D9488', icono: 'leaf-outline' },
 ];
 
 export default function Catalogos() {
@@ -50,15 +77,20 @@ export default function Catalogos() {
               )}
               <Text style={styles.cardNombre}>{c.nombre}</Text>
 
-              {c.catalogoUrl ? (
-                <TouchableOpacity
-                  style={[styles.verBtn, { backgroundColor: c.color }]}
-                  onPress={() => Linking.openURL(c.catalogoUrl!)}
-                  activeOpacity={0.85}
-                >
-                  <Ionicons name="document-text-outline" size={16} color="#fff" />
-                  <Text style={styles.verBtnText}>Ver catálogo</Text>
-                </TouchableOpacity>
+              {c.catalogos && c.catalogos.length > 0 ? (
+                <View style={styles.verBtnGroup}>
+                  {c.catalogos.map((cat) => (
+                    <TouchableOpacity
+                      key={cat.label}
+                      style={[styles.verBtn, { backgroundColor: c.color }]}
+                      onPress={() => Linking.openURL(cat.url)}
+                      activeOpacity={0.85}
+                    >
+                      <Ionicons name="document-text-outline" size={16} color="#fff" />
+                      <Text style={styles.verBtnText}>{cat.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               ) : (
                 <View style={styles.prontoBadge}>
                   <Ionicons name="time-outline" size={14} color={COLORS.textLight} />
@@ -147,6 +179,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: COLORS.text,
     marginBottom: 14,
+  },
+  verBtnGroup: {
+    gap: 8,
+    alignItems: 'center',
   },
   verBtn: {
     flexDirection: 'row',
