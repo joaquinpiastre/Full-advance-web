@@ -4,13 +4,11 @@ import {
   StyleSheet, useWindowDimensions, Platform,
 } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
-import { Carousel, Pagination } from 'react-native-reanimated-carousel';
-import { useSharedValue } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../constants';
-import { IMAGENES_PRODUCTOS, PRODUCTOS_DESTACADOS } from '../constants/productos';
+import { IMAGENES_PRODUCTOS } from '../constants/productos';
 import UbicacionMapa from './UbicacionMapa';
 import ProductCarousel from './ProductCarousel';
 
@@ -157,49 +155,6 @@ const TIPOS_COMERCIO = [
 
 const HERO_IMAGE = IMAGENES_PRODUCTOS.bimbo[0] ?? IMAGENES_PRODUCTOS.citric[0] ?? null;
 
-function ProductosDestacados() {
-  const progress = useSharedValue(0);
-  if (PRODUCTOS_DESTACADOS.length === 0) return null;
-
-  return (
-    <View style={styles.section}>
-      <Text style={styles.eyebrow}>GALERÍA</Text>
-      <Text style={styles.sectionTitle}>Productos destacados</Text>
-      <View style={styles.titleBar} />
-      <Text style={styles.sectionSubtitle}>Una muestra de lo que llevamos día a día a tu comercio</Text>
-
-      <View style={styles.destacadosFrame}>
-        <Carousel
-          style={styles.destacadosCarousel}
-          data={PRODUCTOS_DESTACADOS}
-          loop
-          autoplay
-          autoplayInterval={4000}
-          onProgressChange={(p) => {
-            progress.value = p;
-          }}
-          renderItem={({ item }) => (
-            <View style={StyleSheet.absoluteFill}>
-              <ExpoImage source={item.imagen} style={StyleSheet.absoluteFill} contentFit="cover" transition={250} />
-              <LinearGradient colors={['transparent', 'rgba(21,22,30,0.82)']} style={styles.destacadoOverlay}>
-                <Text style={[styles.destacadoMarca, { color: item.color }]}>{item.marca}</Text>
-                <Text style={styles.destacadoNombre}>{item.nombre}</Text>
-              </LinearGradient>
-            </View>
-          )}
-        />
-      </View>
-      <Pagination
-        count={PRODUCTOS_DESTACADOS.length}
-        progress={progress}
-        containerStyle={styles.destacadosDots}
-        dotStyle={{ width: 7, height: 7, borderRadius: 4, backgroundColor: 'rgba(21,22,30,0.15)' }}
-        activeDotStyle={{ width: 7, height: 7, borderRadius: 4, backgroundColor: COLORS.primary }}
-      />
-    </View>
-  );
-}
-
 export default function LandingPage() {
   const { width } = useWindowDimensions();
   const scrollRef = useRef<ScrollView>(null);
@@ -342,9 +297,6 @@ export default function LandingPage() {
             </View>
           ))}
         </View>
-
-        {/* PRODUCTOS DESTACADOS */}
-        <ProductosDestacados />
 
         {/* MARCAS / CATÁLOGO */}
         <View style={styles.section} onLayout={(ev) => setMarcasY(ev.nativeEvent.layout.y)}>
@@ -879,45 +831,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 12,
     marginBottom: 32,
-  },
-
-  // PRODUCTOS DESTACADOS
-  destacadosFrame: {
-    width: '100%',
-    height: 260,
-    borderRadius: RADIUS.xl,
-    overflow: 'hidden',
-    backgroundColor: COLORS.border,
-    ...SHADOW.card,
-  },
-  destacadosCarousel: {
-    width: '100%',
-    height: '100%',
-  },
-  destacadoOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 18,
-  },
-  destacadoMarca: {
-    fontFamily: FONTS.bodySemi,
-    fontSize: 12,
-    letterSpacing: 0.6,
-    marginBottom: 2,
-  },
-  destacadoNombre: {
-    fontFamily: FONTS.display,
-    fontSize: 18,
-    color: '#fff',
-  },
-  destacadosDots: {
-    gap: 7,
-    marginTop: 14,
-    justifyContent: 'center',
   },
 
   // MARCAS
