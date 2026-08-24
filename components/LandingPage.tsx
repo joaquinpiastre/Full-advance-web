@@ -9,7 +9,7 @@ import { useSharedValue } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, RADIUS, SHADOW } from '../constants';
+import { COLORS, FONTS, RADIUS, SHADOW } from '../constants';
 import { IMAGENES_PRODUCTOS, PRODUCTOS_DESTACADOS } from '../constants/productos';
 import UbicacionMapa from './UbicacionMapa';
 import ProductCarousel from './ProductCarousel';
@@ -155,6 +155,8 @@ const TIPOS_COMERCIO = [
   { icono: 'cash-outline' as const, label: 'Autoservicios' },
 ];
 
+const HERO_IMAGE = IMAGENES_PRODUCTOS.bimbo[0] ?? IMAGENES_PRODUCTOS.citric[0] ?? null;
+
 function ProductosDestacados() {
   const progress = useSharedValue(0);
   if (PRODUCTOS_DESTACADOS.length === 0) return null;
@@ -179,7 +181,7 @@ function ProductosDestacados() {
           renderItem={({ item }) => (
             <View style={StyleSheet.absoluteFill}>
               <ExpoImage source={item.imagen} style={StyleSheet.absoluteFill} contentFit="cover" transition={250} />
-              <LinearGradient colors={['transparent', 'rgba(8,17,38,0.75)']} style={styles.destacadoOverlay}>
+              <LinearGradient colors={['transparent', 'rgba(21,22,30,0.82)']} style={styles.destacadoOverlay}>
                 <Text style={[styles.destacadoMarca, { color: item.color }]}>{item.marca}</Text>
                 <Text style={styles.destacadoNombre}>{item.nombre}</Text>
               </LinearGradient>
@@ -191,7 +193,7 @@ function ProductosDestacados() {
         count={PRODUCTOS_DESTACADOS.length}
         progress={progress}
         containerStyle={styles.destacadosDots}
-        dotStyle={{ width: 7, height: 7, borderRadius: 4, backgroundColor: 'rgba(15,23,42,0.15)' }}
+        dotStyle={{ width: 7, height: 7, borderRadius: 4, backgroundColor: 'rgba(21,22,30,0.15)' }}
         activeDotStyle={{ width: 7, height: 7, borderRadius: 4, backgroundColor: COLORS.primary }}
       />
     </View>
@@ -202,6 +204,7 @@ export default function LandingPage() {
   const { width } = useWindowDimensions();
   const scrollRef = useRef<ScrollView>(null);
   const [marcasY, setMarcasY] = useState(0);
+  const [ubicacionY, setUbicacionY] = useState(0);
 
   const isDesktop = width >= 1000;
   const isTablet = width >= 700;
@@ -214,96 +217,125 @@ export default function LandingPage() {
   const comercioWidth = isDesktop ? '22%' : isTablet ? '31%' : '48%';
 
   const irACatalogos = () => router.push('/catalogos');
-  const irAMarcas = () => scrollRef.current?.scrollTo({ y: marcasY - 20, animated: true });
+  const irAMarcas = () => scrollRef.current?.scrollTo({ y: marcasY - 90, animated: true });
+  const irAUbicacion = () => scrollRef.current?.scrollTo({ y: ubicacionY - 90, animated: true });
 
   return (
     <View style={styles.root}>
-      {/* Barra superior fija */}
-      {width >= 360 && (
-        <View style={styles.navWordmarkPill} pointerEvents="none">
-          <Image source={require('../assets/full-advance-logo.png')} style={styles.navLogo} resizeMode="contain" />
-          <Text style={styles.navWordmarkText}>FULL ADVANCE</Text>
+      {/* NAVBAR */}
+      <View style={[styles.navbar, { paddingTop: Platform.OS === 'web' ? 14 : 46 }]}>
+        <View style={styles.navbarInner}>
+          <View style={styles.navBrand}>
+            <Image source={require('../assets/full-advance-logo.png')} style={styles.navLogo} resizeMode="contain" />
+            {width >= 340 && <Text style={styles.navWordmark}>Full Advance</Text>}
+          </View>
+
+          {isDesktop && (
+            <View style={styles.navLinks}>
+              <TouchableOpacity onPress={irAMarcas} activeOpacity={0.7}>
+                <Text style={styles.navLinkText}>Marcas</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={irACatalogos} activeOpacity={0.7}>
+                <Text style={styles.navLinkText}>Catálogos</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={irAUbicacion} activeOpacity={0.7}>
+                <Text style={styles.navLinkText}>Ubicación</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <TouchableOpacity style={styles.navCta} onPress={irACatalogos} activeOpacity={0.85}>
+            <Text style={styles.navCtaText}>Catálogos</Text>
+            <Ionicons name="arrow-forward" size={14} color="#fff" />
+          </TouchableOpacity>
         </View>
-      )}
-      <TouchableOpacity style={styles.floatingLoginShadow} onPress={irACatalogos} activeOpacity={0.85}>
-        <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.floatingLogin}>
-          <Ionicons name="albums-outline" size={17} color="#fff" />
-          <Text style={styles.floatingLoginText}>Catálogos</Text>
-        </LinearGradient>
-      </TouchableOpacity>
+      </View>
 
       <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* HERO */}
-        <LinearGradient
-          colors={[COLORS.secondary, '#0A2456']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={[styles.hero, { paddingTop: Platform.OS === 'web' ? 92 : 116 }]}
-        >
-          <View style={styles.heroBlobRed} pointerEvents="none" />
+        <View style={[styles.hero, { paddingTop: Platform.OS === 'web' ? 128 : 148 }]}>
+          <View style={styles.heroBlobPrimary} pointerEvents="none" />
+          <View style={styles.heroBlobInk} pointerEvents="none" />
 
-          <View style={styles.badgePill}>
-            <Ionicons name="ribbon-outline" size={13} color="#fff" />
-            <Text style={styles.badgePillText}>Distribuidor oficial</Text>
-          </View>
-
-          <View style={styles.logoBox}>
-            <Image
-              source={require('../assets/full-advance-logo.png')}
-              style={[styles.logo, isNarrow && styles.logoSmall]}
-              resizeMode="contain"
-            />
-          </View>
-          <Text style={[styles.heroTitle, { fontSize: isDesktop ? 34 : isTablet ? 29 : isNarrow ? 22 : 25 }]}>
-            Distribuidora oficial en el sur de Mendoza
-          </Text>
-          <Text style={styles.heroSubtitle}>Bimbo · Palluzi · Angiola · Rikitos · Citric</Text>
-          <Text style={styles.heroParagraph}>
-            Llevamos los productos de las marcas más elegidas a más de 1000 comercios,
-            con flota propia y logística pensada para que nunca te falte mercadería.
-          </Text>
-
-          <View style={[styles.heroButtons, isNarrow && styles.heroButtonsStack]}>
-            <TouchableOpacity
-              style={[styles.btnPrimaryShadow, isNarrow && styles.btnFullWidth]}
-              onPress={irACatalogos}
-              activeOpacity={0.88}
-            >
-              <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.btnPrimary}>
-                <Ionicons name="albums-outline" size={18} color="#fff" />
-                <Text style={styles.btnPrimaryText}>Catálogos</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.btnOutline, isNarrow && styles.btnFullWidth]}
-              onPress={irAMarcas}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="grid-outline" size={18} color="#fff" />
-              <Text style={styles.btnOutlineText}>Ver marcas</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.trustRow}>
-            {TRUST_BADGES.map((t) => (
-              <View key={t.label} style={styles.trustItem}>
-                <Ionicons name={t.icono} size={15} color="#DCE6FA" />
-                <Text style={styles.trustText}>{t.label}</Text>
+          <View style={[styles.heroInner, isDesktop && styles.heroInnerRow]}>
+            <View style={[styles.heroTextCol, isDesktop && styles.heroTextColDesktop]}>
+              <View style={[styles.badgePill, !isDesktop && styles.centerSelf]}>
+                <Ionicons name="ribbon-outline" size={13} color={COLORS.primary} />
+                <Text style={styles.badgePillText}>Distribuidor oficial</Text>
               </View>
-            ))}
+
+              <Text
+                style={[
+                  styles.heroTitle,
+                  { fontSize: isDesktop ? 42 : isTablet ? 34 : isNarrow ? 27 : 30 },
+                  !isDesktop && styles.textCenter,
+                ]}
+              >
+                Distribuidora oficial en el sur de Mendoza
+              </Text>
+              <Text style={[styles.heroSubtitle, !isDesktop && styles.textCenter]}>
+                Bimbo · Palluzi · Angiola · Rikitos · Citric
+              </Text>
+              <Text style={[styles.heroParagraph, !isDesktop && styles.textCenter]}>
+                Llevamos los productos de las marcas más elegidas a más de 1000 comercios,
+                con flota propia y logística pensada para que nunca te falte mercadería.
+              </Text>
+
+              <View style={[styles.heroButtons, !isDesktop && styles.centerRow, isNarrow && styles.heroButtonsStack]}>
+                <TouchableOpacity
+                  style={[styles.btnPrimaryShadow, isNarrow && styles.btnFullWidth]}
+                  onPress={irACatalogos}
+                  activeOpacity={0.88}
+                >
+                  <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.btnPrimary}>
+                    <Ionicons name="albums-outline" size={18} color="#fff" />
+                    <Text style={styles.btnPrimaryText}>Catálogos</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.btnOutline, isNarrow && styles.btnFullWidth]}
+                  onPress={irAMarcas}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="grid-outline" size={18} color={COLORS.ink} />
+                  <Text style={styles.btnOutlineText}>Ver marcas</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={[styles.trustRow, !isDesktop && styles.centerRow]}>
+                {TRUST_BADGES.map((t) => (
+                  <View key={t.label} style={styles.trustItem}>
+                    <Ionicons name={t.icono} size={15} color={COLORS.primary} />
+                    <Text style={styles.trustText}>{t.label}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {HERO_IMAGE && (
+              <View style={[styles.heroVisualCol, isDesktop && styles.heroVisualColDesktop]}>
+                <View style={styles.heroImageCard}>
+                  <ExpoImage source={HERO_IMAGE} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} />
+                </View>
+                <View style={styles.heroStatBadge}>
+                  <Text style={styles.heroStatBadgeValue}>+1000</Text>
+                  <Text style={styles.heroStatBadgeLabel}>comercios{'\n'}visitados</Text>
+                </View>
+              </View>
+            )}
           </View>
 
           <View style={styles.scrollCue} pointerEvents="none">
-            <Ionicons name="chevron-down-outline" size={18} color="rgba(255,255,255,0.7)" />
+            <Ionicons name="chevron-down-outline" size={18} color={COLORS.textMuted} />
           </View>
-        </LinearGradient>
+        </View>
 
         {/* ESTADÍSTICAS */}
         <View style={styles.statsStrip}>
           {ESTADISTICAS.map((e) => (
             <View key={e.label} style={[styles.statCard, { width: statCardWidth }]}>
               <View style={styles.statIconCircle}>
-                <Ionicons name={e.icono} size={22} color={COLORS.secondary} />
+                <Ionicons name={e.icono} size={22} color={COLORS.primary} />
               </View>
               <Text style={styles.statValor}>{e.valor}</Text>
               <Text style={styles.statLabel}>{e.label}</Text>
@@ -380,7 +412,7 @@ export default function LandingPage() {
             {MOTIVOS.map((m) => (
               <View key={m.titulo} style={[styles.featureCard, { width: featureCardWidth }]}>
                 <View style={styles.featureIconCircle}>
-                  <Ionicons name={m.icono} size={22} color={COLORS.secondary} />
+                  <Ionicons name={m.icono} size={22} color={COLORS.primary} />
                 </View>
                 <View style={styles.featureTextBox}>
                   <Text style={styles.featureTitulo}>{m.titulo}</Text>
@@ -402,7 +434,7 @@ export default function LandingPage() {
             {TIPOS_COMERCIO.map((c) => (
               <View key={c.label} style={[styles.comercioCard, { width: comercioWidth }]}>
                 <View style={styles.comercioIconCircle}>
-                  <Ionicons name={c.icono} size={20} color={COLORS.secondary} />
+                  <Ionicons name={c.icono} size={20} color={COLORS.primary} />
                 </View>
                 <Text style={styles.comercioLabel}>{c.label}</Text>
               </View>
@@ -411,7 +443,7 @@ export default function LandingPage() {
         </View>
 
         {/* UBICACIÓN / COBERTURA */}
-        <View style={styles.section}>
+        <View style={styles.section} onLayout={(ev) => setUbicacionY(ev.nativeEvent.layout.y)}>
           <Text style={styles.eyebrow}>COBERTURA</Text>
           <Text style={styles.sectionTitle}>Dónde estamos</Text>
           <View style={styles.titleBar} />
@@ -429,15 +461,15 @@ export default function LandingPage() {
               </Text>
               <View style={styles.locationBullets}>
                 <View style={styles.locationBulletItem}>
-                  <Ionicons name="navigate-outline" size={16} color={COLORS.secondary} />
+                  <Ionicons name="navigate-outline" size={16} color={COLORS.primary} />
                   <Text style={styles.locationBulletText}>Cobertura en todo el sur mendocino</Text>
                 </View>
                 <View style={styles.locationBulletItem}>
-                  <Ionicons name="car-outline" size={16} color={COLORS.secondary} />
+                  <Ionicons name="car-outline" size={16} color={COLORS.primary} />
                   <Text style={styles.locationBulletText}>Amplia flota propia de distribución</Text>
                 </View>
                 <View style={styles.locationBulletItem}>
-                  <Ionicons name="storefront-outline" size={16} color={COLORS.secondary} />
+                  <Ionicons name="storefront-outline" size={16} color={COLORS.primary} />
                   <Text style={styles.locationBulletText}>Más de 1000 negocios visitados</Text>
                 </View>
               </View>
@@ -446,13 +478,13 @@ export default function LandingPage() {
         </View>
 
         {/* CTA FINAL */}
-        <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.ctaFinal}>
+        <LinearGradient colors={[COLORS.ink, COLORS.inkLight]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.ctaFinal}>
           <Text style={styles.ctaTitulo}>¿Querés ver todo lo que tenemos?</Text>
           <Text style={styles.ctaTexto}>
             Descubrí el catálogo completo de productos de cada una de nuestras marcas.
           </Text>
           <TouchableOpacity style={styles.ctaBtn} onPress={irACatalogos} activeOpacity={0.85}>
-            <Ionicons name="albums-outline" size={18} color={COLORS.primary} />
+            <Ionicons name="albums-outline" size={18} color={COLORS.ink} />
             <Text style={styles.ctaBtnText}>Ver catálogos</Text>
           </TouchableOpacity>
         </LinearGradient>
@@ -504,134 +536,161 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
+  centerSelf: {
+    alignSelf: 'center',
+  },
+  centerRow: {
+    justifyContent: 'center',
+  },
+  textCenter: {
+    textAlign: 'center',
+  },
 
-  // NAV FIJO
-  navWordmarkPill: {
+  // NAVBAR
+  navbar: {
     position: 'absolute',
-    top: Platform.OS === 'web' ? 16 : 48,
-    left: 16,
+    top: 0,
+    left: 0,
+    right: 0,
     zIndex: 20,
+    backgroundColor: 'rgba(250,249,246,0.92)',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingBottom: 14,
+  },
+  navbarInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(8,17,38,0.55)',
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: RADIUS.pill,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    maxWidth: 1180,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  navBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
   },
   navLogo: {
-    width: 22,
-    height: 22,
-    borderRadius: 5,
-    backgroundColor: '#fff',
+    width: 30,
+    height: 30,
+    borderRadius: 7,
   },
-  navWordmarkText: {
-    color: '#fff',
-    fontWeight: '800',
-    fontSize: 12,
-    letterSpacing: 0.5,
+  navWordmark: {
+    fontFamily: FONTS.display,
+    color: COLORS.ink,
+    fontSize: 15,
+    letterSpacing: 0.2,
   },
-  floatingLoginShadow: {
-    position: 'absolute',
-    top: Platform.OS === 'web' ? 16 : 48,
-    right: 16,
-    zIndex: 20,
-    borderRadius: RADIUS.pill,
-    ...SHADOW.floating,
+  navLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 28,
   },
-  floatingLogin: {
+  navLinkText: {
+    fontFamily: FONTS.bodySemi,
+    color: COLORS.textLight,
+    fontSize: 13.5,
+  },
+  navCta: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 10,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 9,
     paddingHorizontal: 16,
     borderRadius: RADIUS.pill,
   },
-  floatingLoginText: {
+  navCtaText: {
+    fontFamily: FONTS.bodySemi,
     color: '#fff',
-    fontWeight: '800',
     fontSize: 13,
   },
 
   // HERO
   hero: {
-    paddingBottom: 40,
+    paddingBottom: 44,
     paddingHorizontal: 24,
-    alignItems: 'center',
-    borderBottomLeftRadius: 36,
-    borderBottomRightRadius: 36,
     overflow: 'hidden',
   },
-  heroBlobRed: {
+  heroBlobPrimary: {
     position: 'absolute',
-    top: -120,
-    right: -100,
-    width: 320,
-    height: 320,
-    borderRadius: 160,
-    backgroundColor: 'rgba(227,30,36,0.10)',
+    top: -140,
+    right: -120,
+    width: 380,
+    height: 380,
+    borderRadius: 190,
+    backgroundColor: COLORS.primarySoft,
+  },
+  heroBlobInk: {
+    position: 'absolute',
+    bottom: -160,
+    left: -140,
+    width: 360,
+    height: 360,
+    borderRadius: 180,
+    backgroundColor: 'rgba(43,58,85,0.06)',
+  },
+  heroInner: {
+    maxWidth: 1180,
+    width: '100%',
+    alignSelf: 'center',
+    gap: 40,
+  },
+  heroInnerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 56,
+  },
+  heroTextCol: {
+    alignItems: 'center',
+  },
+  heroTextColDesktop: {
+    flex: 1,
+    alignItems: 'flex-start',
   },
   badgePill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
-    paddingVertical: 6,
+    backgroundColor: COLORS.primarySoft,
+    paddingVertical: 7,
     paddingHorizontal: 14,
     borderRadius: RADIUS.pill,
     marginBottom: 18,
   },
   badgePillText: {
-    color: '#fff',
+    fontFamily: FONTS.bodySemi,
+    color: COLORS.primaryDark,
     fontSize: 11.5,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-  },
-  logoBox: {
-    backgroundColor: '#fff',
-    borderRadius: RADIUS.lg,
-    padding: 16,
-    marginBottom: 20,
-    ...SHADOW.floating,
-  },
-  logo: {
-    width: 180,
-    height: 118,
-  },
-  logoSmall: {
-    width: 150,
-    height: 98,
+    letterSpacing: 0.3,
   },
   heroTitle: {
-    fontWeight: '800',
-    color: '#fff',
-    textAlign: 'center',
+    fontFamily: FONTS.display,
+    color: COLORS.ink,
     maxWidth: 560,
   },
   heroSubtitle: {
-    marginTop: 10,
+    marginTop: 12,
+    fontFamily: FONTS.bodySemi,
     fontSize: 15,
-    fontWeight: '700',
-    color: '#FFD8D9',
-    textAlign: 'center',
-    letterSpacing: 0.3,
+    color: COLORS.primary,
+    letterSpacing: 0.2,
   },
   heroParagraph: {
     marginTop: 14,
-    fontSize: 14,
-    color: '#E4EAF5',
-    textAlign: 'center',
-    maxWidth: 520,
-    lineHeight: 21,
+    fontFamily: FONTS.body,
+    fontSize: 14.5,
+    color: COLORS.textLight,
+    maxWidth: 480,
+    lineHeight: 22,
   },
   heroButtons: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 26,
+    marginTop: 28,
     flexWrap: 'wrap',
-    justifyContent: 'center',
   },
   heroButtonsStack: {
     flexDirection: 'column',
@@ -656,8 +715,8 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.pill,
   },
   btnPrimaryText: {
+    fontFamily: FONTS.bodySemi,
     color: '#fff',
-    fontWeight: '800',
     fontSize: 15,
   },
   btnOutline: {
@@ -666,22 +725,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     borderWidth: 1.5,
-    borderColor: '#fff',
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: RADIUS.pill,
   },
   btnOutlineText: {
-    color: '#fff',
-    fontWeight: '800',
+    fontFamily: FONTS.bodySemi,
+    color: COLORS.ink,
     fontSize: 15,
   },
   trustRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 18,
-    justifyContent: 'center',
-    marginTop: 28,
+    marginTop: 30,
   },
   trustItem: {
     flexDirection: 'row',
@@ -689,19 +748,57 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   trustText: {
-    color: '#DCE6FA',
+    fontFamily: FONTS.bodyMedium,
+    color: COLORS.textLight,
     fontSize: 12,
-    fontWeight: '600',
   },
   scrollCue: {
-    marginTop: 26,
+    alignSelf: 'center',
+    marginTop: 40,
     width: 32,
     height: 32,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  // HERO VISUAL
+  heroVisualCol: {
+    width: '100%',
+  },
+  heroVisualColDesktop: {
+    flex: 1,
+  },
+  heroImageCard: {
+    width: '100%',
+    aspectRatio: 4 / 3,
+    borderRadius: RADIUS.xl,
+    overflow: 'hidden',
+    backgroundColor: COLORS.border,
+    ...SHADOW.floating,
+  },
+  heroStatBadge: {
+    position: 'absolute',
+    left: -14,
+    bottom: -18,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    ...SHADOW.floating,
+  },
+  heroStatBadgeValue: {
+    fontFamily: FONTS.display,
+    color: COLORS.ink,
+    fontSize: 20,
+  },
+  heroStatBadgeLabel: {
+    fontFamily: FONTS.bodyMedium,
+    color: COLORS.textLight,
+    fontSize: 11,
+    marginTop: 2,
   },
 
   // ESTADÍSTICAS
@@ -710,7 +807,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 12,
     justifyContent: 'center',
-    marginTop: -32,
+    marginTop: 8,
     marginHorizontal: 20,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.xl,
@@ -725,18 +822,19 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#EEF2F8',
+    backgroundColor: COLORS.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   statValor: {
+    fontFamily: FONTS.display,
     fontSize: 15,
-    fontWeight: '800',
     color: COLORS.text,
     textAlign: 'center',
   },
   statLabel: {
+    fontFamily: FONTS.bodyMedium,
     fontSize: 11,
     color: COLORS.textLight,
     textAlign: 'center',
@@ -746,24 +844,24 @@ const styles = StyleSheet.create({
   // SECCIONES
   section: {
     paddingHorizontal: 24,
-    paddingTop: 56,
+    paddingTop: 64,
     paddingBottom: 16,
   },
   sectionAlt: {
-    backgroundColor: '#F7F8FA',
+    backgroundColor: '#F4F2ED',
   },
   eyebrow: {
+    fontFamily: FONTS.bodySemi,
     fontSize: 11.5,
-    fontWeight: '800',
     color: COLORS.primary,
     textAlign: 'center',
-    letterSpacing: 1.5,
-    marginBottom: 6,
+    letterSpacing: 1.8,
+    marginBottom: 8,
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.text,
+    fontFamily: FONTS.display,
+    fontSize: 24,
+    color: COLORS.ink,
     textAlign: 'center',
   },
   titleBar: {
@@ -772,14 +870,15 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: COLORS.primary,
     alignSelf: 'center',
-    marginTop: 12,
+    marginTop: 14,
   },
   sectionSubtitle: {
-    fontSize: 13,
+    fontFamily: FONTS.body,
+    fontSize: 13.5,
     color: COLORS.textLight,
     textAlign: 'center',
     marginTop: 12,
-    marginBottom: 28,
+    marginBottom: 32,
   },
 
   // PRODUCTOS DESTACADOS
@@ -788,7 +887,7 @@ const styles = StyleSheet.create({
     height: 260,
     borderRadius: RADIUS.xl,
     overflow: 'hidden',
-    backgroundColor: '#EEF2F8',
+    backgroundColor: COLORS.border,
     ...SHADOW.card,
   },
   destacadosCarousel: {
@@ -805,14 +904,14 @@ const styles = StyleSheet.create({
     paddingBottom: 18,
   },
   destacadoMarca: {
+    fontFamily: FONTS.bodySemi,
     fontSize: 12,
-    fontWeight: '800',
     letterSpacing: 0.6,
     marginBottom: 2,
   },
   destacadoNombre: {
+    fontFamily: FONTS.display,
     fontSize: 18,
-    fontWeight: '800',
     color: '#fff',
   },
   destacadosDots: {
@@ -851,11 +950,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   brandNombre: {
+    fontFamily: FONTS.displayBold,
     fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.text,
+    color: COLORS.ink,
   },
   brandDescripcion: {
+    fontFamily: FONTS.body,
     fontSize: 12,
     color: COLORS.textLight,
     textAlign: 'center',
@@ -875,8 +975,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   chipText: {
+    fontFamily: FONTS.bodySemi,
     fontSize: 10.5,
-    fontWeight: '700',
   },
 
   // PROCESO
@@ -897,26 +997,27 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: 10,
+    fontFamily: FONTS.display,
     fontSize: 46,
-    fontWeight: '900',
-    color: 'rgba(15,23,42,0.06)',
+    color: 'rgba(21,22,30,0.05)',
   },
   stepIconCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.ink,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
   },
   stepTitulo: {
+    fontFamily: FONTS.displayBold,
     fontSize: 14.5,
-    fontWeight: '800',
-    color: COLORS.text,
+    color: COLORS.ink,
     marginBottom: 4,
   },
   stepTexto: {
+    fontFamily: FONTS.body,
     fontSize: 12,
     color: COLORS.textLight,
     lineHeight: 18,
@@ -941,7 +1042,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#EEF2F8',
+    backgroundColor: COLORS.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -949,12 +1050,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   featureTitulo: {
+    fontFamily: FONTS.displayBold,
     fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.text,
+    color: COLORS.ink,
     marginBottom: 4,
   },
   featureTexto: {
+    fontFamily: FONTS.body,
     fontSize: 12,
     color: COLORS.textLight,
     lineHeight: 18,
@@ -979,15 +1081,15 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#EEF2F8',
+    backgroundColor: COLORS.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   comercioLabel: {
+    fontFamily: FONTS.bodySemi,
     fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.text,
+    color: COLORS.ink,
     textAlign: 'center',
   },
 
@@ -1015,11 +1117,12 @@ const styles = StyleSheet.create({
     ...SHADOW.card,
   },
   locationDireccion: {
+    fontFamily: FONTS.displayBold,
     fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.secondary,
+    color: COLORS.ink,
   },
   locationTexto: {
+    fontFamily: FONTS.body,
     fontSize: 12.5,
     color: COLORS.textLight,
     marginTop: 8,
@@ -1035,9 +1138,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   locationBulletText: {
+    fontFamily: FONTS.bodyMedium,
     fontSize: 12.5,
     color: COLORS.text,
-    fontWeight: '600',
   },
 
   // CTA FINAL
@@ -1050,17 +1153,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   ctaTitulo: {
-    fontSize: 20,
-    fontWeight: '800',
+    fontFamily: FONTS.display,
+    fontSize: 21,
     color: '#fff',
     textAlign: 'center',
   },
   ctaTexto: {
+    fontFamily: FONTS.body,
     fontSize: 13,
-    color: '#FFE1E2',
+    color: 'rgba(255,255,255,0.72)',
     textAlign: 'center',
     marginTop: 8,
-    marginBottom: 20,
+    marginBottom: 22,
     maxWidth: 420,
   },
   ctaBtn: {
@@ -1073,14 +1177,14 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.pill,
   },
   ctaBtnText: {
-    color: COLORS.primary,
-    fontWeight: '800',
+    fontFamily: FONTS.bodySemi,
+    color: COLORS.ink,
     fontSize: 15,
   },
 
   // FOOTER
   footer: {
-    backgroundColor: '#0B1220',
+    backgroundColor: COLORS.ink,
     paddingVertical: 40,
     paddingHorizontal: 24,
     marginTop: 40,
@@ -1096,26 +1200,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   footerMarca: {
+    fontFamily: FONTS.display,
     color: '#fff',
-    fontWeight: '800',
     fontSize: 16,
     letterSpacing: 1,
     marginBottom: 8,
   },
   footerTexto: {
-    color: '#8A93A6',
+    fontFamily: FONTS.body,
+    color: '#9CA0AC',
     fontSize: 12,
     lineHeight: 18,
   },
   footerColTitle: {
+    fontFamily: FONTS.displayBold,
     color: '#fff',
-    fontWeight: '800',
     fontSize: 12.5,
     marginBottom: 10,
     letterSpacing: 0.4,
   },
   footerLink: {
-    color: '#9CA6B8',
+    fontFamily: FONTS.body,
+    color: '#9CA0AC',
     fontSize: 12.5,
     marginBottom: 8,
   },
@@ -1124,7 +1230,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   footerDireccion: {
-    color: '#9CA6B8',
+    fontFamily: FONTS.body,
+    color: '#9CA0AC',
     fontSize: 12,
     lineHeight: 17,
   },
@@ -1135,9 +1242,9 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   footerLoginText: {
+    fontFamily: FONTS.bodySemi,
     color: COLORS.primary,
     fontSize: 12.5,
-    fontWeight: '800',
   },
   footerDivider: {
     height: 1,
@@ -1146,7 +1253,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   footerCopy: {
-    color: '#5B6472',
+    fontFamily: FONTS.body,
+    color: '#6B7280',
     fontSize: 10.5,
     textAlign: 'center',
   },

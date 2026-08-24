@@ -2,7 +2,7 @@ import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, useWindowD
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, RADIUS, SHADOW } from '../constants';
+import { COLORS, FONTS, RADIUS, SHADOW } from '../constants';
 
 type CatalogoLink = {
   label: string;
@@ -55,7 +55,7 @@ export default function Catalogos() {
 
   return (
     <View style={styles.root}>
-      <LinearGradient colors={[COLORS.secondary, '#0A2456']} style={[styles.header, { paddingTop: Platform.OS === 'web' ? 24 : 56 }]}>
+      <LinearGradient colors={[COLORS.ink, COLORS.inkLight]} style={[styles.header, { paddingTop: Platform.OS === 'web' ? 24 : 56 }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.8}>
           <Ionicons name="arrow-back" size={18} color="#fff" />
           <Text style={styles.backBtnText}>Inicio</Text>
@@ -128,19 +128,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   backBtnText: {
+    fontFamily: FONTS.bodySemi,
     color: '#fff',
-    fontWeight: '700',
     fontSize: 13,
   },
   headerTitulo: {
+    fontFamily: FONTS.display,
     fontSize: 26,
-    fontWeight: '800',
     color: '#fff',
   },
   headerSubtitulo: {
     marginTop: 6,
+    fontFamily: FONTS.body,
     fontSize: 13,
-    color: '#E4EAF5',
+    color: 'rgba(255,255,255,0.72)',
     maxWidth: 460,
   },
   scrollContent: {
@@ -175,8 +176,8 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   cardNombre: {
+    fontFamily: FONTS.displayBold,
     fontSize: 17,
-    fontWeight: '800',
     color: COLORS.text,
     marginBottom: 14,
   },
@@ -193,8 +194,8 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.pill,
   },
   verBtnText: {
+    fontFamily: FONTS.bodySemi,
     color: '#fff',
-    fontWeight: '800',
     fontSize: 13,
   },
   prontoBadge: {
@@ -207,8 +208,8 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.pill,
   },
   prontoText: {
+    fontFamily: FONTS.bodySemi,
     color: COLORS.textLight,
-    fontWeight: '700',
     fontSize: 12,
   },
 });
