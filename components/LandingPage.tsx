@@ -3,11 +3,16 @@ import {
   View, Text, Image, ScrollView, TouchableOpacity,
   StyleSheet, useWindowDimensions, Platform,
 } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
+import { Carousel, Pagination } from 'react-native-reanimated-carousel';
+import { useSharedValue } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SHADOW } from '../constants';
+import { IMAGENES_PRODUCTOS, PRODUCTOS_DESTACADOS } from '../constants/productos';
 import UbicacionMapa from './UbicacionMapa';
+import ProductCarousel from './ProductCarousel';
 
 type Marca = {
   nombre: string;
@@ -16,6 +21,7 @@ type Marca = {
   descripcion: string;
   productos: string[];
   logo?: any;
+  imagenesProducto: any[];
 };
 
 const MARCAS: Marca[] = [
@@ -26,6 +32,7 @@ const MARCAS: Marca[] = [
     descripcion: 'Pan y panificados líderes en toda Argentina.',
     productos: ['Pan lactal', 'Facturas', 'Bizcochos', 'Tostadas', 'Bollería'],
     logo: require('../assets/bimbo-logo.jpg'),
+    imagenesProducto: IMAGENES_PRODUCTOS.bimbo,
   },
   {
     nombre: 'Palluzi',
@@ -34,6 +41,7 @@ const MARCAS: Marca[] = [
     descripcion: 'Fiambres y embutidos de primera calidad.',
     productos: ['Fiambres', 'Embutidos', 'Quesos', 'Productos de granja'],
     logo: require('../assets/palluzi-logo.jpg'),
+    imagenesProducto: IMAGENES_PRODUCTOS.palluzi,
   },
   {
     nombre: 'Angiola',
@@ -42,6 +50,7 @@ const MARCAS: Marca[] = [
     descripcion: 'Pastas y productos italianos de siempre.',
     productos: ['Pastas secas', 'Fideos', 'Sémola', 'Salsas'],
     logo: require('../assets/angiola-logo.jpg'),
+    imagenesProducto: IMAGENES_PRODUCTOS.angiola,
   },
   {
     nombre: 'Rikitos',
@@ -49,6 +58,7 @@ const MARCAS: Marca[] = [
     icono: 'fast-food-outline',
     descripcion: 'Snacks y golosinas para todo momento.',
     productos: ['Papas fritas', 'Palitos salados', 'Snacks', 'Golosinas'],
+    imagenesProducto: IMAGENES_PRODUCTOS.rikitos,
   },
   {
     nombre: 'Citric',
@@ -57,6 +67,7 @@ const MARCAS: Marca[] = [
     descripcion: 'Jugos y bebidas cítricas para todo momento.',
     productos: ['Jugos', 'Bebidas cítricas'],
     logo: require('../assets/citric-logo.jpg'),
+    imagenesProducto: IMAGENES_PRODUCTOS.citric,
   },
 ];
 
@@ -143,6 +154,49 @@ const TIPOS_COMERCIO = [
   { icono: 'file-tray-stacked-outline' as const, label: 'Despensas' },
   { icono: 'cash-outline' as const, label: 'Autoservicios' },
 ];
+
+function ProductosDestacados() {
+  const progress = useSharedValue(0);
+  if (PRODUCTOS_DESTACADOS.length === 0) return null;
+
+  return (
+    <View style={styles.section}>
+      <Text style={styles.eyebrow}>GALERÍA</Text>
+      <Text style={styles.sectionTitle}>Productos destacados</Text>
+      <View style={styles.titleBar} />
+      <Text style={styles.sectionSubtitle}>Una muestra de lo que llevamos día a día a tu comercio</Text>
+
+      <View style={styles.destacadosFrame}>
+        <Carousel
+          style={styles.destacadosCarousel}
+          data={PRODUCTOS_DESTACADOS}
+          loop
+          autoplay
+          autoplayInterval={4000}
+          onProgressChange={(p) => {
+            progress.value = p;
+          }}
+          renderItem={({ item }) => (
+            <View style={StyleSheet.absoluteFill}>
+              <ExpoImage source={item.imagen} style={StyleSheet.absoluteFill} contentFit="cover" transition={250} />
+              <LinearGradient colors={['transparent', 'rgba(8,17,38,0.75)']} style={styles.destacadoOverlay}>
+                <Text style={[styles.destacadoMarca, { color: item.color }]}>{item.marca}</Text>
+                <Text style={styles.destacadoNombre}>{item.nombre}</Text>
+              </LinearGradient>
+            </View>
+          )}
+        />
+      </View>
+      <Pagination
+        count={PRODUCTOS_DESTACADOS.length}
+        progress={progress}
+        containerStyle={styles.destacadosDots}
+        dotStyle={{ width: 7, height: 7, borderRadius: 4, backgroundColor: 'rgba(15,23,42,0.15)' }}
+        activeDotStyle={{ width: 7, height: 7, borderRadius: 4, backgroundColor: COLORS.primary }}
+      />
+    </View>
+  );
+}
 
 export default function LandingPage() {
   const { width } = useWindowDimensions();
@@ -257,6 +311,9 @@ export default function LandingPage() {
           ))}
         </View>
 
+        {/* PRODUCTOS DESTACADOS */}
+        <ProductosDestacados />
+
         {/* MARCAS / CATÁLOGO */}
         <View style={styles.section} onLayout={(ev) => setMarcasY(ev.nativeEvent.layout.y)}>
           <Text style={styles.eyebrow}>CATÁLOGO</Text>
@@ -278,7 +335,8 @@ export default function LandingPage() {
                 )}
                 <Text style={styles.brandNombre}>{m.nombre}</Text>
                 <Text style={styles.brandDescripcion}>{m.descripcion}</Text>
-                <View style={styles.brandChips}>
+                <ProductCarousel images={m.imagenesProducto} color={m.color} height={120} />
+                <View style={[styles.brandChips, m.imagenesProducto.length > 0 && { marginTop: 12 }]}>
                   {m.productos.map((p) => (
                     <View key={p} style={[styles.chip, { borderColor: m.color }]}>
                       <Text style={[styles.chipText, { color: m.color }]}>{p}</Text>
@@ -722,6 +780,45 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 12,
     marginBottom: 28,
+  },
+
+  // PRODUCTOS DESTACADOS
+  destacadosFrame: {
+    width: '100%',
+    height: 260,
+    borderRadius: RADIUS.xl,
+    overflow: 'hidden',
+    backgroundColor: '#EEF2F8',
+    ...SHADOW.card,
+  },
+  destacadosCarousel: {
+    width: '100%',
+    height: '100%',
+  },
+  destacadoOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 18,
+  },
+  destacadoMarca: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    marginBottom: 2,
+  },
+  destacadoNombre: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  destacadosDots: {
+    gap: 7,
+    marginTop: 14,
+    justifyContent: 'center',
   },
 
   // MARCAS
