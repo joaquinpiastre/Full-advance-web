@@ -40,7 +40,7 @@ const CATALOGOS: CatalogoMarca[] = [
   {
     nombre: 'Angiola',
     color: '#D97706',
-    icono: 'pizza-outline',
+    icono: 'ice-cream-outline',
     logo: require('../assets/angiola-logo.jpg'),
     catalogos: [{ label: 'Ver catálogo', url: '/catalogos/angiola.pdf' }],
   },
