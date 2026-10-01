@@ -67,6 +67,15 @@ const MARCAS: Marca[] = [
     logo: require('../assets/citric-logo.jpg'),
     imagenesProducto: IMAGENES_PRODUCTOS.citric,
   },
+  {
+    nombre: 'Silvina',
+    color: '#C81E3A',
+    icono: 'restaurant-outline',
+    descripcion: 'Rebozadores, pan rallado y productos para cocinar desde 1972.',
+    productos: ['Pan rallado', 'Rebozador', 'Mezcla', 'Polenta', 'Sémola', 'Fécula de mandioca', 'Fainá', 'Sopa paraguaya'],
+    logo: require('../assets/silvina-logo.png'),
+    imagenesProducto: IMAGENES_PRODUCTOS.silvina,
+  },
 ];
 
 const TRUST_BADGES = [
@@ -79,7 +88,7 @@ const ESTADISTICAS = [
   { icono: 'storefront-outline' as const, valor: '+1000', label: 'Comercios visitados' },
   { icono: 'bus-outline' as const, valor: 'Flota propia', label: 'Distribución diaria' },
   { icono: 'map-outline' as const, valor: 'Sur de Mendoza', label: 'Zona de cobertura' },
-  { icono: 'pricetags-outline' as const, valor: '5 marcas', label: 'Líderes en consumo masivo' },
+  { icono: 'pricetags-outline' as const, valor: '6 marcas', label: 'Líderes en consumo masivo' },
 ];
 
 const PROCESO = [
@@ -229,7 +238,7 @@ export default function LandingPage() {
                 Distribuidora oficial en el sur de Mendoza
               </Text>
               <Text style={[styles.heroSubtitle, !isDesktop && styles.textCenter]}>
-                Bimbo · Palluzi · Angiola · Rikitos · Citric
+                Bimbo · Palluzi · Angiola · Rikitos · Citric · Silvina
               </Text>
               <Text style={[styles.heroParagraph, !isDesktop && styles.textCenter]}>
                 Llevamos los productos de las marcas más elegidas a más de 1000 comercios,

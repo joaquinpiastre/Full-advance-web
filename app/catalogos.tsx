@@ -46,6 +46,14 @@ const CATALOGOS: CatalogoMarca[] = [
   },
   { nombre: 'Rikitos', color: '#7C3AED', icono: 'fast-food-outline' },
   { nombre: 'Citric', color: '#0D9488', icono: 'leaf-outline', logo: require('../assets/citric-logo.jpg') },
+  {
+    nombre: 'Silvina',
+    color: '#C81E3A',
+    icono: 'restaurant-outline',
+    logo: require('../assets/silvina-logo.png'),
+    // Araujo no publica un PDF: el catálogo es una página armada dentro de la app.
+    catalogos: [{ label: 'Ver catálogo', url: '/catalogo-silvina' }],
+  },
 ];
 
 export default function Catalogos() {
@@ -83,7 +91,7 @@ export default function Catalogos() {
                     <TouchableOpacity
                       key={cat.label}
                       style={[styles.verBtn, { backgroundColor: c.color }]}
-                      onPress={() => Linking.openURL(cat.url)}
+                      onPress={() => (cat.url.endsWith('.pdf') ? Linking.openURL(cat.url) : router.push(cat.url as any))}
                       activeOpacity={0.85}
                     >
                       <Ionicons name="document-text-outline" size={16} color="#fff" />
