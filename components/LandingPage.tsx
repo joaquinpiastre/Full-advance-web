@@ -10,7 +10,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../constants';
 import { IMAGENES_PRODUCTOS } from '../constants/productos';
 import UbicacionMapa from './UbicacionMapa';
-import ProductCarousel from './ProductCarousel';
 
 type Marca = {
   nombre: string;
@@ -328,8 +327,7 @@ export default function LandingPage() {
                 )}
                 <Text style={styles.brandNombre}>{m.nombre}</Text>
                 <Text style={styles.brandDescripcion}>{m.descripcion}</Text>
-                <ProductCarousel images={m.imagenesProducto} color={m.color} height={120} />
-                <View style={[styles.brandChips, m.imagenesProducto.length > 0 && { marginTop: 12 }]}>
+                <View style={[styles.brandChips, { marginTop: 12 }]}>
                   {m.productos.map((p) => (
                     <View key={p} style={[styles.chip, { borderColor: m.color }]}>
                       <Text style={[styles.chipText, { color: m.color }]}>{p}</Text>
