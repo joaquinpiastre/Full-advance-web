@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { COLORS, UBICACION_FULL_ADVANCE } from '../constants';
+import { COLORS, FONTS, UBICACION_FULL_ADVANCE } from '../constants';
 
 const { latitude, longitude } = UBICACION_FULL_ADVANCE;
 const MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
@@ -48,6 +48,15 @@ export default function UbicacionMapa() {
         iconAnchor: [11, 22],
       });
       L.marker([latitude, longitude], { icon }).addTo(map);
+      // Baja la saturación del mapa para que conviva con la paleta cálida del sitio
+      const atribucion = map.attributionControl?.getContainer?.();
+      if (atribucion) {
+        atribucion.style.margin = '0 14px 12px 0';
+        atribucion.style.borderRadius = '8px';
+        atribucion.style.padding = '2px 8px';
+      }
+      const mosaicos = map.getPane('tilePane');
+      if (mosaicos) mosaicos.style.filter = 'saturate(0.55) sepia(0.14) contrast(0.96)';
       mapRef.current = map;
     }
     init().catch(() => {});
@@ -65,9 +74,9 @@ export default function UbicacionMapa() {
         target="_blank"
         rel="noopener noreferrer"
         style={{
-          position: 'absolute', left: 12, bottom: 12, zIndex: 1000,
-          background: '#fff', color: COLORS.primary, fontWeight: 800, fontSize: 12,
-          padding: '8px 14px', borderRadius: 999, textDecoration: 'none',
+          position: 'absolute', left: 16, bottom: 16, zIndex: 1000,
+          background: '#fff', color: COLORS.primary, fontFamily: FONTS.bodySemi, fontSize: 14.5,
+          padding: '10px 18px', borderRadius: 999, textDecoration: 'none',
           boxShadow: '0 4px 14px rgba(0,0,0,.18)', display: 'inline-flex', alignItems: 'center', gap: 6,
         }}
       >

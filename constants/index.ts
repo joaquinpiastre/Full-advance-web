@@ -1,43 +1,50 @@
+// Paleta: sale del propio logo de Full Advance (rojo, cobre y gris acero) sobre
+// neutros cálidos tipo papel/cartón, que es el material del rubro.
 export const COLORS = {
-  primary: '#D6293C',       // Rojo de marca, un tono más profundo y menos "neón"
-  primaryDark: '#A81F2C',
-  primarySoft: '#FBEAEC',   // Tinte muy claro para fondos/insignias suaves
-  ink: '#15161E',           // Negro cálido — reemplaza al azul marino como color "fuerte"
-  inkLight: '#2A2C3A',
-  secondary: '#2B3A55',     // Azul pizarra, ahora un acento puntual, no un fondo completo
-  secondaryLight: '#44557A',
-  accent: '#C9A227',
-  background: '#FAF9F6',    // Blanco cálido, más elegante que el gris frío anterior
+  primary: '#BE1E25',       // Rojo del logo
+  primaryDark: '#96141B',
+  primarySoft: '#FAE8E5',   // Tinte claro para fondos e insignias
+  cobre: '#8F5B45',         // Marrón cobre del logo: acento secundario
+  kraft: '#D8B78F',         // Cartón: detalles y líneas sobre fondos oscuros
+  kraftSoft: '#F1E6D7',
+  ink: '#1D1614',           // Negro cálido para títulos y texto
+  inkLight: '#33241D',
+  espresso: '#221814',      // Fondo de las secciones oscuras
+  secondary: '#5E5F60',     // Gris acero del logo
+  secondaryLight: '#8A8B8C',
+  accent: '#D8B78F',
+  background: '#F8F4EE',    // Papel
   surface: '#FFFFFF',
   card: '#FFFFFF',
-  text: '#181924',
-  textLight: '#6C7280',
-  textMuted: '#9CA0AC',
-  border: '#ECE9E2',
-  divider: '#F2F0EA',
+  text: '#1D1614',
+  textLight: '#5E544E',
+  textMuted: '#8F847D',
+  border: '#E8E0D6',
+  divider: '#F0EAE1',
   danger: '#DC2626',
   success: '#16A34A',
   warning: '#D97706',
 };
 
-// Tipografía: Plus Jakarta Sans para títulos (personalidad, geometría),
-// Inter para texto de cuerpo y UI (alta legibilidad). Se cargan como Google
-// Fonts en app/_layout.tsx vía @expo-google-fonts.
+// Tipografía: Archivo (Omnibus-Type, Buenos Aires) en toda la página. ExtraBold para
+// títulos —con itálica para los énfasis—, Archivo Narrow en mayúsculas para rótulos
+// y Archivo regular para el texto. Se cargan en app/_layout.tsx.
 export const FONTS = {
-  display: 'PlusJakartaSans_800ExtraBold',
-  displayBold: 'PlusJakartaSans_700Bold',
-  displaySemi: 'PlusJakartaSans_600SemiBold',
-  body: 'Inter_400Regular',
-  bodyMedium: 'Inter_500Medium',
-  bodySemi: 'Inter_600SemiBold',
+  display: 'Archivo_800ExtraBold',
+  displayItalic: 'Archivo_800ExtraBold_Italic',
+  displayBold: 'Archivo_800ExtraBold',
+  displaySemi: 'Archivo_600SemiBold',
+  label: 'ArchivoNarrow_600SemiBold',
+  body: 'Archivo_400Regular',
+  bodyMedium: 'Archivo_500Medium',
+  bodySemi: 'Archivo_600SemiBold',
 };
 
-// Tokens compartidos de diseño: radios, sombras y espaciados consistentes
 export const RADIUS = {
   sm: 8,
   md: 12,
-  lg: 16,
-  xl: 22,
+  lg: 18,
+  xl: 26,
   pill: 999,
 };
 
@@ -51,20 +58,16 @@ export const SPACING = {
 
 export const SHADOW = {
   card: {
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 2,
+    boxShadow: '0 1px 2px rgba(29, 22, 20, 0.04), 0 10px 28px rgba(29, 22, 20, 0.06)',
   },
   floating: {
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 6,
+    boxShadow: '0 2px 6px rgba(29, 22, 20, 0.06), 0 22px 54px rgba(29, 22, 20, 0.16)',
   },
 } as const;
+
+// Ancho máximo del contenido y cortes de diseño
+export const MAX_WIDTH = 1200;
+export const BREAKPOINTS = { tablet: 720, desktop: 1024 };
 
 // Depósito de Full Advance: Av. Sarmiento 4777, Las Paredes, San Rafael, Mendoza
 // (coordenadas tomadas del pin de Google Maps compartido por el cliente)

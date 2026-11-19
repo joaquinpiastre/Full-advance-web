@@ -1,15 +1,17 @@
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, useWindowDimensions, Platform } from 'react-native';
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../constants';
+import BarraSuperior from '../components/BarraSuperior';
+import PieDePagina from '../components/PieDePagina';
+import { Aparecer, Contenedor, Rotulo, Titulo, useDiseno, volver } from '../components/ui';
 
-const SILVINA_COLOR = '#C81E3A';
+const SILVINA_TINTE = '#FBECEE';
 
 type ProductoSilvina = {
   nombre: string;
   descripcion: string;
-  presentaciones: string;
+  presentaciones: string[];
   imagen: any;
 };
 
@@ -17,215 +19,246 @@ const PRODUCTOS_SILVINA: ProductoSilvina[] = [
   {
     nombre: 'Pan rallado',
     descripcion: '0% grasas trans, 0% colesterol.',
-    presentaciones: '12u x 450g · 10u x 1kg · bolsas 5/10/25kg',
-    imagen: require('../assets/products/silvina/silvina-pan-rallado.png'),
+    presentaciones: ['12u x 450g', '10u x 1kg', 'Bolsas 5/10/25kg'],
+    imagen: require('../assets/products/silvina/silvina-pan-rallado.webp'),
   },
   {
     nombre: 'Rebozador',
     descripcion: 'Rebozador clásico para milanesas y frituras.',
-    presentaciones: '12u x 450g · 10u x 1kg · bolsas 5/10/25kg',
-    imagen: require('../assets/products/silvina/silvina-rebozador.png'),
+    presentaciones: ['12u x 450g', '10u x 1kg', 'Bolsas 5/10/25kg'],
+    imagen: require('../assets/products/silvina/silvina-rebozador.webp'),
   },
   {
     nombre: 'Rebozador Total',
     descripcion: 'Saborizado con queso, ajo y perejil, orégano y huevo.',
-    presentaciones: '12u x 400g · bolsa 3kg',
-    imagen: require('../assets/products/silvina/silvina-rebozador-total.png'),
+    presentaciones: ['12u x 400g', 'Bolsa 3kg'],
+    imagen: require('../assets/products/silvina/silvina-rebozador-total.webp'),
   },
   {
     nombre: 'Horno Rebozador',
     descripcion: 'Rebozador pensado para cocción al horno.',
-    presentaciones: '12u x 400g',
-    imagen: require('../assets/products/silvina/silvina-horno-rebozador.png'),
+    presentaciones: ['12u x 400g'],
+    imagen: require('../assets/products/silvina/silvina-horno-rebozador.webp'),
   },
   {
     nombre: 'Mezcla',
     descripcion: 'Mezcla de pan rallado y rebozador.',
-    presentaciones: '12u x 450g · bolsas 5/25kg',
-    imagen: require('../assets/products/silvina/silvina-mezcla.png'),
+    presentaciones: ['12u x 450g', 'Bolsas 5/25kg'],
+    imagen: require('../assets/products/silvina/silvina-mezcla.webp'),
   },
   {
     nombre: 'Polenta',
     descripcion: 'Polenta de cocción rápida.',
-    presentaciones: '10u x 400g · bolsa 5kg',
-    imagen: require('../assets/products/silvina/silvina-polenta.png'),
+    presentaciones: ['10u x 400g', 'Bolsa 5kg'],
+    imagen: require('../assets/products/silvina/silvina-polenta.webp'),
   },
   {
     nombre: 'Sémola',
     descripcion: 'Sémola de trigo candeal.',
-    presentaciones: '10u x 400g · bolsa 5kg',
-    imagen: require('../assets/products/silvina/silvina-semola.png'),
+    presentaciones: ['10u x 400g', 'Bolsa 5kg'],
+    imagen: require('../assets/products/silvina/silvina-semola.webp'),
   },
   {
     nombre: 'Fécula de mandioca',
     descripcion: 'Ideal para preparar chipá.',
-    presentaciones: '10u x 400g · 6u x 900g · bolsa 5kg',
-    imagen: require('../assets/products/silvina/silvina-fecula-mandioca.png'),
+    presentaciones: ['10u x 400g', '6u x 900g', 'Bolsa 5kg'],
+    imagen: require('../assets/products/silvina/silvina-fecula-mandioca.webp'),
   },
   {
     nombre: 'Fainá',
     descripcion: 'Preparado tradicional de fainá.',
-    presentaciones: '12u x 250g · bolsa 5kg',
-    imagen: require('../assets/products/silvina/silvina-faina.png'),
+    presentaciones: ['12u x 250g', 'Bolsa 5kg'],
+    imagen: require('../assets/products/silvina/silvina-faina.webp'),
   },
   {
     nombre: 'Fainá con verdeo',
     descripcion: 'Preparado de fainá con verdeo.',
-    presentaciones: '12u x 250g',
-    imagen: require('../assets/products/silvina/silvina-faina-verdeo.png'),
+    presentaciones: ['12u x 250g'],
+    imagen: require('../assets/products/silvina/silvina-faina-verdeo.webp'),
   },
   {
     nombre: 'Sopa paraguaya',
     descripcion: 'Preparado tradicional de sopa paraguaya.',
-    presentaciones: '10u x 400g · 8u x 900g · bolsa 5kg',
-    imagen: require('../assets/products/silvina/silvina-sopa-paraguaya.png'),
+    presentaciones: ['10u x 400g', '8u x 900g', 'Bolsa 5kg'],
+    imagen: require('../assets/products/silvina/silvina-sopa-paraguaya.webp'),
   },
 ];
 
+function enFilas<T>(items: T[], columnas: number): (T | null)[][] {
+  const filas: (T | null)[][] = [];
+  for (let i = 0; i < items.length; i += columnas) {
+    const fila: (T | null)[] = items.slice(i, i + columnas);
+    while (fila.length < columnas) fila.push(null);
+    filas.push(fila);
+  }
+  return filas;
+}
+
 export default function CatalogoSilvina() {
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 700;
-  const isDesktop = width >= 1000;
-  const cardWidth = isDesktop ? '31.5%' : isTablet ? '47%' : '100%';
+  const { esEscritorio, esTablet } = useDiseno();
+  const { top } = useSafeAreaInsets();
+  const columnas = esEscritorio ? 4 : esTablet ? 3 : 2;
+  const separacion = esEscritorio ? 22 : esTablet ? 18 : 12;
 
   return (
-    <View style={styles.root}>
-      <LinearGradient colors={[COLORS.ink, COLORS.inkLight]} style={[styles.header, { paddingTop: Platform.OS === 'web' ? 24 : 56 }]}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.8}>
-          <Ionicons name="arrow-back" size={18} color="#fff" />
-          <Text style={styles.backBtnText}>Catálogos</Text>
-        </TouchableOpacity>
-        <Image source={require('../assets/silvina-logo.png')} style={styles.headerLogo} resizeMode="contain" />
-        <Text style={styles.headerTitulo}>Catálogo Silvina</Text>
-        <Text style={styles.headerSubtitulo}>
-          Rebozadores, pan rallado y productos para cocinar desde 1972. Distribuido por Araujo S.R.L.
-        </Text>
-      </LinearGradient>
+    <View style={styles.raiz}>
+      <BarraSuperior volver={{ label: 'Catálogos', onPress: volver }} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.grid}>
-          {PRODUCTOS_SILVINA.map((p) => (
-            <View key={p.nombre} style={[styles.card, { width: cardWidth }]}>
-              <View style={styles.imgFrame}>
-                <Image source={p.imagen} style={styles.img} resizeMode="contain" />
-              </View>
-              <Text style={styles.cardNombre}>{p.nombre}</Text>
-              <Text style={styles.cardDescripcion}>{p.descripcion}</Text>
-              <View style={styles.presentPill}>
-                <Ionicons name="cube-outline" size={12} color={SILVINA_COLOR} />
-                <Text style={styles.presentText}>{p.presentaciones}</Text>
-              </View>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <Contenedor style={{ paddingTop: top + (esTablet ? 144 : 108), paddingBottom: esTablet ? 96 : 64 }}>
+          <Aparecer style={[styles.encabezado, esTablet && styles.encabezadoFila]}>
+            <View style={styles.logoCaja}>
+              <Image
+                source={require('../assets/logos/silvina.webp')}
+                alt="Logo de Silvina"
+                contentFit="contain"
+                style={{ width: esTablet ? 118 : 88, height: esTablet ? 100 : 74 }}
+              />
             </View>
-          ))}
-        </View>
+            <View style={{ flex: 1 }}>
+              <Rotulo>Catálogo de productos</Rotulo>
+              <Titulo nivel={1} tamano={2} style={{ marginTop: 14 }}>
+                Silvina
+              </Titulo>
+              <Text style={styles.bajada}>
+                Rebozadores, pan rallado y productos para cocinar desde 1972. Distribuido por Araujo S.R.L.
+              </Text>
+            </View>
+          </Aparecer>
+
+          <View style={{ gap: separacion, marginTop: esTablet ? 52 : 32 }}>
+            {enFilas(PRODUCTOS_SILVINA, columnas).map((fila, i) => (
+              <View key={i} style={{ flexDirection: 'row', gap: separacion }}>
+                {fila.map((p, j) =>
+                  p ? (
+                    <Aparecer key={p.nombre} demora={j * 70} style={{ flex: 1 }}>
+                      <View style={styles.tarjeta}>
+                        <View style={styles.marco}>
+                          <Image
+                            source={p.imagen}
+                            alt={`Silvina ${p.nombre}`}
+                            contentFit="contain"
+                            transition={200}
+                            style={styles.pack}
+                          />
+                        </View>
+                        <View style={[styles.cuerpo, !esTablet && { padding: 10, paddingTop: 12 }]}>
+                          <Text style={[styles.nombre, !esTablet && { fontSize: 17, lineHeight: 21 }]}>{p.nombre}</Text>
+                          <Text style={styles.descripcion}>{p.descripcion}</Text>
+                          <View style={styles.presentaciones}>
+                            {p.presentaciones.map((pr) => (
+                              <View key={pr} style={styles.presentacion}>
+                                <Text style={styles.presentacionTexto}>{pr}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      </View>
+                    </Aparecer>
+                  ) : (
+                    <View key={`hueco-${j}`} style={{ flex: 1 }} />
+                  ),
+                )}
+              </View>
+            ))}
+          </View>
+        </Contenedor>
+
+        <PieDePagina />
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  raiz: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  header: {
-    paddingHorizontal: 24,
-    paddingBottom: 32,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    alignItems: 'flex-start',
+  encabezado: {
+    gap: 20,
   },
-  backBtn: {
+  encabezadoFila: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 32,
+  },
+  logoCaja: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: RADIUS.pill,
-    marginBottom: 20,
-  },
-  backBtnText: {
-    fontFamily: FONTS.bodySemi,
-    color: '#fff',
-    fontSize: 13,
-  },
-  headerLogo: {
-    width: 64,
-    height: 64,
-    marginBottom: 10,
-  },
-  headerTitulo: {
-    fontFamily: FONTS.display,
-    fontSize: 26,
-    color: '#fff',
-  },
-  headerSubtitulo: {
-    marginTop: 6,
-    fontFamily: FONTS.body,
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.72)',
-    maxWidth: 460,
-  },
-  scrollContent: {
-    padding: 24,
-    paddingTop: 32,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'center',
-  },
-  card: {
+    padding: 16,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    borderTopWidth: 3,
-    borderTopColor: SILVINA_COLOR,
-    padding: 18,
-    alignItems: 'center',
     ...SHADOW.card,
   },
-  imgFrame: {
-    width: '100%',
-    height: 150,
-    borderRadius: RADIUS.md,
-    backgroundColor: '#FBEAEC',
-    marginBottom: 12,
+  bajada: {
+    marginTop: 14,
+    fontFamily: FONTS.body,
+    fontSize: 17,
+    lineHeight: 28,
+    color: COLORS.textLight,
+    maxWidth: 560,
+  },
+  tarjeta: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 8,
+    ...SHADOW.card,
+  },
+  marco: {
+    aspectRatio: 1,
+    borderRadius: RADIUS.lg,
+    backgroundColor: SILVINA_TINTE,
     overflow: 'hidden',
   },
-  img: {
-    width: '100%',
-    height: '100%',
+  pack: {
+    position: 'absolute',
+    top: '9%',
+    bottom: '7%',
+    left: '8%',
+    right: '8%',
   },
-  cardNombre: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 16,
-    color: COLORS.text,
-    textAlign: 'center',
+  cuerpo: {
+    flex: 1,
+    padding: 14,
+    paddingTop: 16,
   },
-  cardDescripcion: {
-    marginTop: 4,
+  nombre: {
+    fontFamily: FONTS.display,
+    fontSize: 19.5,
+    lineHeight: 24,
+    letterSpacing: -0.3,
+    color: COLORS.ink,
+  },
+  descripcion: {
+    marginTop: 6,
     fontFamily: FONTS.body,
-    fontSize: 12,
+    fontSize: 14.5,
+    lineHeight: 21,
     color: COLORS.textLight,
-    textAlign: 'center',
   },
-  presentPill: {
-    marginTop: 10,
+  presentaciones: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 6,
-    backgroundColor: COLORS.background,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: RADIUS.pill,
+    marginTop: 'auto',
+    paddingTop: 14,
   },
-  presentText: {
-    fontFamily: FONTS.bodySemi,
-    color: SILVINA_COLOR,
-    fontSize: 11,
-    textAlign: 'center',
+  presentacion: {
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: RADIUS.sm,
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  presentacionTexto: {
+    fontFamily: FONTS.bodyMedium,
+    fontSize: 13,
+    color: COLORS.ink,
   },
 });

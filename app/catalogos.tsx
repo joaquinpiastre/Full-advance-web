@@ -1,223 +1,255 @@
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, useWindowDimensions, Linking, Platform } from 'react-native';
-import { router } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../constants';
+import { MARCAS, type Catalogo, type Marca } from '../constants/marcas';
+import BarraSuperior from '../components/BarraSuperior';
+import PieDePagina from '../components/PieDePagina';
+import { Aparecer, Contenedor, Enfasis, Rotulo, Titulo, abrirCatalogo, soloWeb, useDiseno, volver } from '../components/ui';
 
-type CatalogoLink = {
-  label: string;
-  url: string;
-};
+type Entrada = { marca: Marca; catalogo: Catalogo };
 
-type CatalogoMarca = {
-  nombre: string;
-  color: string;
-  icono: keyof typeof Ionicons.glyphMap;
-  logo?: any;
-  // Cuando tengas el catálogo de cada marca (PDF, link de Drive, etc.) completá esta lista
-  // y la tarjeta pasa a mostrar el/los botón/es "Ver catálogo" en vez de "Próximamente".
-  catalogos?: CatalogoLink[];
-};
+// Para sumar un catálogo, agregalo en la lista `catalogos` de la marca en constants/marcas.ts:
+// aparece acá solo, y la marca deja de figurar en “Próximamente”.
+const DISPONIBLES: Entrada[] = MARCAS.flatMap((marca) => marca.catalogos.map((catalogo) => ({ marca, catalogo })));
+const PROXIMAMENTE = MARCAS.filter((m) => m.catalogos.length === 0);
 
-const CATALOGOS: CatalogoMarca[] = [
-  {
-    nombre: 'Bimbo',
-    color: '#E31E24',
-    icono: 'nutrition-outline',
-    logo: require('../assets/bimbo-logo.jpg'),
-    catalogos: [
-      { label: 'Catálogo de productos', url: '/catalogos/bimbo-productos.pdf' },
-      { label: 'Catálogo gastronómico', url: '/catalogos/bimbo-gastronomico.pdf' },
-    ],
-  },
-  {
-    nombre: 'Palluzi',
-    color: '#7C2D12',
-    icono: 'restaurant-outline',
-    logo: require('../assets/palluzi-logo.jpg'),
-    catalogos: [{ label: 'Ver catálogo', url: '/catalogos/palluzi.pdf' }],
-  },
-  {
-    nombre: 'Angiola',
-    color: '#D97706',
-    icono: 'ice-cream-outline',
-    logo: require('../assets/angiola-logo.jpg'),
-    catalogos: [{ label: 'Ver catálogo', url: '/catalogos/angiola.pdf' }],
-  },
-  { nombre: 'Rikitos', color: '#7C3AED', icono: 'fast-food-outline' },
-  { nombre: 'Citric', color: '#0D9488', icono: 'leaf-outline', logo: require('../assets/citric-logo.jpg') },
-  {
-    nombre: 'Silvina',
-    color: '#C81E3A',
-    icono: 'restaurant-outline',
-    logo: require('../assets/silvina-logo.png'),
-    // Araujo no publica un PDF: el catálogo es una página armada dentro de la app.
-    catalogos: [{ label: 'Ver catálogo', url: '/catalogo-silvina' }],
-  },
-];
+function enFilas<T>(items: T[], columnas: number): (T | null)[][] {
+  const filas: (T | null)[][] = [];
+  for (let i = 0; i < items.length; i += columnas) {
+    const fila: (T | null)[] = items.slice(i, i + columnas);
+    while (fila.length < columnas) fila.push(null);
+    filas.push(fila);
+  }
+  return filas;
+}
+
+function TarjetaCatalogo({ marca, catalogo }: Entrada) {
+  const [hover, setHover] = useState(false);
+  const esPdf = catalogo.formato === 'PDF';
+  return (
+    <Pressable
+      role="link"
+      aria-label={`${marca.nombre}: ${catalogo.label}`}
+      onPress={() => abrirCatalogo(catalogo.url)}
+      onHoverIn={() => setHover(true)}
+      onHoverOut={() => setHover(false)}
+      style={({ pressed }) => [
+        styles.tarjeta,
+        hover && styles.tarjetaHover,
+        pressed && { transform: [{ scale: 0.99 }] },
+        soloWeb({ transitionProperty: 'transform, box-shadow', transitionDuration: '300ms' }),
+      ]}
+    >
+      <View style={styles.tapa}>
+        <Image
+          source={catalogo.tapa}
+          alt={`Tapa del ${catalogo.label.toLowerCase()} de ${marca.nombre}`}
+          contentFit="cover"
+          contentPosition="top"
+          transition={250}
+          style={[
+            StyleSheet.absoluteFill,
+            { transform: [{ scale: hover ? 1.04 : 1 }] },
+            soloWeb({ transitionProperty: 'transform', transitionDuration: '600ms', transitionTimingFunction: 'cubic-bezier(0.2, 0.7, 0.2, 1)' }),
+          ]}
+        />
+        <View style={styles.formato}>
+          <Ionicons name={esPdf ? 'document-text-outline' : 'globe-outline'} size={13} color={COLORS.ink} />
+          <Text style={styles.formatoTexto}>{catalogo.formato}</Text>
+        </View>
+      </View>
+
+      <View style={styles.cuerpo}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.marca}>{marca.nombre}</Text>
+          <Text style={styles.titulo}>{catalogo.label}</Text>
+        </View>
+        <View style={[styles.flecha, hover && { backgroundColor: COLORS.primary }, soloWeb({ transitionProperty: 'background-color', transitionDuration: '200ms' })]}>
+          <Ionicons name={esPdf ? 'arrow-down' : 'arrow-forward'} size={19} color="#fff" />
+        </View>
+      </View>
+    </Pressable>
+  );
+}
 
 export default function Catalogos() {
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 700;
-  const cardWidth = isTablet ? '47%' : '100%';
+  const { esEscritorio, esTablet } = useDiseno();
+  const { top } = useSafeAreaInsets();
+  const separacion = esEscritorio ? 24 : 18;
+  const columnas = esEscritorio ? 3 : esTablet ? 2 : 1;
+
+  // En escritorio, los dos catálogos de la primera marca van arriba, más grandes.
+  const filas = esEscritorio
+    ? [DISPONIBLES.slice(0, 2), ...enFilas(DISPONIBLES.slice(2), 3)]
+    : enFilas(DISPONIBLES, columnas);
 
   return (
-    <View style={styles.root}>
-      <LinearGradient colors={[COLORS.ink, COLORS.inkLight]} style={[styles.header, { paddingTop: Platform.OS === 'web' ? 24 : 56 }]}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.8}>
-          <Ionicons name="arrow-back" size={18} color="#fff" />
-          <Text style={styles.backBtnText}>Inicio</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitulo}>Catálogos</Text>
-        <Text style={styles.headerSubtitulo}>Todo el catálogo de productos de cada marca, en un solo lugar</Text>
-      </LinearGradient>
+    <View style={styles.raiz}>
+      <BarraSuperior volver={{ label: 'Inicio', onPress: volver }} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.grid}>
-          {CATALOGOS.map((c) => (
-            <View key={c.nombre} style={[styles.card, { width: cardWidth, borderTopColor: c.color }]}>
-              {c.logo ? (
-                <Image source={c.logo} style={styles.logoImg} resizeMode="contain" />
-              ) : (
-                <View style={[styles.iconCircle, { backgroundColor: c.color }]}>
-                  <Ionicons name={c.icono} size={26} color="#fff" />
-                </View>
-              )}
-              <Text style={styles.cardNombre}>{c.nombre}</Text>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <Contenedor style={{ paddingTop: top + (esTablet ? 144 : 108), paddingBottom: esTablet ? 96 : 64 }}>
+          <Aparecer>
+            <Rotulo>Catálogos</Rotulo>
+            <Titulo nivel={1} tamano={2} style={{ marginTop: 16, maxWidth: 720 }}>
+              Todos los productos, <Enfasis>marca por marca.</Enfasis>
+            </Titulo>
+            <Text style={styles.bajada}>Todo el catálogo de productos de cada marca, en un solo lugar.</Text>
+          </Aparecer>
 
-              {c.catalogos && c.catalogos.length > 0 ? (
-                <View style={styles.verBtnGroup}>
-                  {c.catalogos.map((cat) => (
-                    <TouchableOpacity
-                      key={cat.label}
-                      style={[styles.verBtn, { backgroundColor: c.color }]}
-                      onPress={() => (cat.url.endsWith('.pdf') ? Linking.openURL(cat.url) : router.push(cat.url as any))}
-                      activeOpacity={0.85}
-                    >
-                      <Ionicons name="document-text-outline" size={16} color="#fff" />
-                      <Text style={styles.verBtnText}>{cat.label}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              ) : (
-                <View style={styles.prontoBadge}>
-                  <Ionicons name="time-outline" size={14} color={COLORS.textLight} />
-                  <Text style={styles.prontoText}>Próximamente</Text>
-                </View>
-              )}
-            </View>
-          ))}
-        </View>
+          <View style={{ gap: separacion, marginTop: esTablet ? 52 : 34 }}>
+            {filas.map((fila, i) => (
+              <View key={i} style={{ flexDirection: 'row', gap: separacion }}>
+                {fila.map((entrada, j) =>
+                  entrada ? (
+                    <Aparecer key={entrada.catalogo.url} demora={j * 100} style={{ flex: 1 }}>
+                      <TarjetaCatalogo {...entrada} />
+                    </Aparecer>
+                  ) : (
+                    <View key={`hueco-${j}`} style={{ flex: 1 }} />
+                  ),
+                )}
+              </View>
+            ))}
+          </View>
+
+          {PROXIMAMENTE.length > 0 && (
+            <Aparecer style={{ marginTop: esTablet ? 72 : 48 }}>
+              <Rotulo>Próximamente</Rotulo>
+              <Text style={[styles.bajada, { marginTop: 10 }]}>
+                Estamos preparando los catálogos de estas marcas. Mientras tanto, consultale a tu preventista.
+              </Text>
+              <View style={[styles.proximos, { gap: separacion }, !esTablet && { flexDirection: 'column' }]}>
+                {PROXIMAMENTE.map((m) => (
+                  <View key={m.id} style={[styles.proximo, esTablet && { flex: 1, maxWidth: 420 }]}>
+                    <Image source={m.fotos[0].src} alt={m.fotos[0].alt} contentFit="cover" contentPosition={m.fotos[0].foco ?? 'center'} style={styles.proximoFoto} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.titulo}>{m.nombre}</Text>
+                      <Text style={styles.proximoTexto}>{m.descripcion}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </Aparecer>
+          )}
+        </Contenedor>
+
+        <PieDePagina />
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  raiz: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  header: {
-    paddingHorizontal: 24,
-    paddingBottom: 32,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-  },
-  backBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: RADIUS.pill,
-    marginBottom: 20,
-  },
-  backBtnText: {
-    fontFamily: FONTS.bodySemi,
-    color: '#fff',
-    fontSize: 13,
-  },
-  headerTitulo: {
-    fontFamily: FONTS.display,
-    fontSize: 26,
-    color: '#fff',
-  },
-  headerSubtitulo: {
-    marginTop: 6,
+  bajada: {
+    marginTop: 16,
     fontFamily: FONTS.body,
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.72)',
-    maxWidth: 460,
+    fontSize: 17,
+    lineHeight: 28,
+    color: COLORS.textLight,
+    maxWidth: 560,
   },
-  scrollContent: {
-    padding: 24,
-    paddingTop: 32,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'center',
-  },
-  card: {
+  tarjeta: {
+    flex: 1,
     backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    borderTopWidth: 3,
-    padding: 22,
-    alignItems: 'center',
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 8,
     ...SHADOW.card,
   },
-  logoImg: {
-    width: 100,
-    height: 60,
-    marginBottom: 14,
+  tarjetaHover: {
+    transform: [{ translateY: -5 }],
+    ...SHADOW.floating,
   },
-  iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+  tapa: {
+    aspectRatio: 1.5,
+    borderRadius: RADIUS.lg,
+    overflow: 'hidden',
+    backgroundColor: COLORS.divider,
+  },
+  formato: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: RADIUS.pill,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+  },
+  formatoTexto: {
+    fontFamily: FONTS.label,
+    fontSize: 12.5,
+    letterSpacing: 1.1,
+    textTransform: 'uppercase',
+    color: COLORS.ink,
+  },
+  cuerpo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    padding: 16,
+    paddingTop: 18,
+  },
+  marca: {
+    fontFamily: FONTS.label,
+    fontSize: 13,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    color: COLORS.primary,
+  },
+  titulo: {
+    marginTop: 4,
+    fontFamily: FONTS.display,
+    fontSize: 21,
+    lineHeight: 26,
+    letterSpacing: -0.3,
+    color: COLORS.ink,
+  },
+  flecha: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: COLORS.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
   },
-  cardNombre: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 17,
-    color: COLORS.text,
-    marginBottom: 14,
+  proximos: {
+    flexDirection: 'row',
+    marginTop: 26,
   },
-  verBtnGroup: {
-    gap: 8,
-    alignItems: 'center',
-  },
-  verBtn: {
+  proximo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: RADIUS.pill,
+    gap: 16,
+    padding: 10,
+    paddingRight: 18,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
   },
-  verBtnText: {
-    fontFamily: FONTS.bodySemi,
-    color: '#fff',
-    fontSize: 13,
+  proximoFoto: {
+    width: 92,
+    height: 92,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.divider,
   },
-  prontoBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: COLORS.background,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: RADIUS.pill,
-  },
-  prontoText: {
-    fontFamily: FONTS.bodySemi,
+  proximoTexto: {
+    marginTop: 4,
+    fontFamily: FONTS.body,
+    fontSize: 14.5,
+    lineHeight: 21,
     color: COLORS.textLight,
-    fontSize: 12,
   },
 });

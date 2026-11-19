@@ -1,964 +1,834 @@
 import { useRef, useState } from 'react';
-import {
-  View, Text, Image, ScrollView, TouchableOpacity,
-  StyleSheet, useWindowDimensions, Platform,
-} from 'react-native';
-import { Image as ExpoImage } from 'expo-image';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../constants';
-import { IMAGENES_PRODUCTOS } from '../constants/productos';
+import { CATALOGO_GASTRONOMICO, MARCAS } from '../constants/marcas';
+import { FOTO_GASTRONOMIA, FOTOS_HERO, GONDOLA, PACKS_CIERRE, type FotoPortada } from '../constants/productos';
+import BarraSuperior from './BarraSuperior';
+import Gondola from './Gondola';
+import PieDePagina from './PieDePagina';
+import TarjetaMarca from './TarjetaMarca';
 import UbicacionMapa from './UbicacionMapa';
+import {
+  Aparecer,
+  Boton,
+  Contenedor,
+  EnlaceFlecha,
+  Enfasis,
+  Rotulo,
+  Titulo,
+  abrirCatalogo,
+  useDiseno,
+  type Icono,
+} from './ui';
 
-type Marca = {
-  nombre: string;
-  color: string;
-  icono: keyof typeof Ionicons.glyphMap;
-  descripcion: string;
-  productos: string[];
-  logo?: any;
-  imagenesProducto: any[];
-};
-
-const MARCAS: Marca[] = [
-  {
-    nombre: 'Bimbo',
-    color: '#E31E24',
-    icono: 'nutrition-outline',
-    descripcion: 'Pan y panificados líderes en toda Argentina.',
-    productos: ['Pan lactal', 'Facturas', 'Bizcochos', 'Tostadas', 'Bollería'],
-    logo: require('../assets/bimbo-logo.jpg'),
-    imagenesProducto: IMAGENES_PRODUCTOS.bimbo,
-  },
-  {
-    nombre: 'Palluzi',
-    color: '#7C2D12',
-    icono: 'restaurant-outline',
-    descripcion: 'Pastas, panificados y productos sin gluten.',
-    productos: ['Pastas rellenas', 'Panificados', 'Empanadas', 'Dulces sin gluten'],
-    logo: require('../assets/palluzi-logo.jpg'),
-    imagenesProducto: IMAGENES_PRODUCTOS.palluzi,
-  },
-  {
-    nombre: 'Angiola',
-    color: '#D97706',
-    icono: 'ice-cream-outline',
-    descripcion: 'Alfajores, budines y galletitas sin gluten.',
-    productos: ['Alfajores', 'Budines', 'Galletitas dulces', 'Crackers'],
-    logo: require('../assets/angiola-logo.jpg'),
-    imagenesProducto: IMAGENES_PRODUCTOS.angiola,
-  },
-  {
-    nombre: 'Rikitos',
-    color: '#7C3AED',
-    icono: 'fast-food-outline',
-    descripcion: 'Snacks y golosinas para todo momento.',
-    productos: ['Papas fritas', 'Palitos salados', 'Snacks', 'Golosinas'],
-    imagenesProducto: IMAGENES_PRODUCTOS.rikitos,
-  },
-  {
-    nombre: 'Citric',
-    color: '#0D9488',
-    icono: 'leaf-outline',
-    descripcion: 'Jugos y bebidas cítricas para todo momento.',
-    productos: ['Jugos', 'Bebidas cítricas'],
-    logo: require('../assets/citric-logo.jpg'),
-    imagenesProducto: IMAGENES_PRODUCTOS.citric,
-  },
-  {
-    nombre: 'Silvina',
-    color: '#C81E3A',
-    icono: 'restaurant-outline',
-    descripcion: 'Rebozadores, pan rallado y productos para cocinar desde 1972.',
-    productos: ['Pan rallado', 'Rebozador', 'Mezcla', 'Polenta', 'Sémola', 'Fécula de mandioca', 'Fainá', 'Sopa paraguaya'],
-    logo: require('../assets/silvina-logo.png'),
-    imagenesProducto: IMAGENES_PRODUCTOS.silvina,
-  },
+const CIFRAS = [
+  { valor: '+1000', label: 'comercios visitados' },
+  { valor: '6', label: 'marcas líderes en consumo masivo' },
+  { valor: 'Diaria', label: 'distribución con flota propia' },
+  { valor: 'Sur de Mendoza', label: 'zona de cobertura' },
 ];
 
-const TRUST_BADGES = [
-  { icono: 'shield-checkmark-outline' as const, label: 'Marcas oficiales' },
-  { icono: 'time-outline' as const, label: 'Reparto diario' },
-  { icono: 'car-sport-outline' as const, label: 'Flota propia' },
-];
-
-const ESTADISTICAS = [
-  { icono: 'storefront-outline' as const, valor: '+1000', label: 'Comercios visitados' },
-  { icono: 'bus-outline' as const, valor: 'Flota propia', label: 'Distribución diaria' },
-  { icono: 'map-outline' as const, valor: 'Sur de Mendoza', label: 'Zona de cobertura' },
-  { icono: 'pricetags-outline' as const, valor: '6 marcas', label: 'Líderes en consumo masivo' },
-];
-
-const PROCESO = [
+const PROCESO: { icono: Icono; titulo: string; texto: string }[] = [
   {
-    numero: '01',
-    icono: 'storefront-outline' as const,
+    icono: 'storefront-outline',
     titulo: 'Visita comercial',
     texto: 'El preventista recorre el comercio y releva sus necesidades de stock.',
   },
   {
-    numero: '02',
-    icono: 'receipt-outline' as const,
+    icono: 'receipt-outline',
     titulo: 'Toma de pedido',
     texto: 'Se arma el pedido con el catálogo completo de nuestras marcas.',
   },
   {
-    numero: '03',
-    icono: 'navigate-outline' as const,
+    icono: 'navigate-outline',
     titulo: 'Reparto con seguimiento',
     texto: 'La flota propia entrega con seguimiento GPS en tiempo real.',
   },
   {
-    numero: '04',
-    icono: 'card-outline' as const,
+    icono: 'card-outline',
     titulo: 'Cobro y control',
     texto: 'Se registra el pago y todo queda historizado en el sistema.',
   },
 ];
 
-const MOTIVOS = [
+const MOTIVOS: { icono: Icono; titulo: string; texto: string }[] = [
   {
-    icono: 'shield-checkmark-outline' as const,
+    icono: 'shield-checkmark-outline',
     titulo: 'Marcas de confianza',
     texto: 'Distribuimos únicamente marcas líderes y reconocidas por los consumidores.',
   },
   {
-    icono: 'flash-outline' as const,
+    icono: 'flash-outline',
     titulo: 'Entrega eficiente',
     texto: 'Logística propia con rutas optimizadas para llegar a tiempo, siempre.',
   },
   {
-    icono: 'people-outline' as const,
+    icono: 'people-outline',
     titulo: 'Atención cercana',
     texto: 'Preventistas y repartidores que conocen a cada comercio de la zona.',
   },
   {
-    icono: 'trending-up-outline' as const,
+    icono: 'trending-up-outline',
     titulo: 'Crecimiento constante',
     texto: 'Ampliamos día a día nuestra red de clientes en todo el sur mendocino.',
   },
   {
-    icono: 'hardware-chip-outline' as const,
+    icono: 'hardware-chip-outline',
     titulo: 'Tecnología propia',
     texto: 'Sistema propio con seguimiento de rutas, pedidos y pagos en tiempo real.',
   },
   {
-    icono: 'cube-outline' as const,
+    icono: 'cube-outline',
     titulo: 'Stock permanente',
     texto: 'Reposición constante para que el comercio nunca se quede sin producto.',
   },
 ];
 
-const TIPOS_COMERCIO = [
-  { icono: 'storefront-outline' as const, label: 'Kioscos' },
-  { icono: 'basket-outline' as const, label: 'Almacenes' },
-  { icono: 'cart-outline' as const, label: 'Supermercados' },
-  { icono: 'bag-handle-outline' as const, label: 'Minimarkets' },
-  { icono: 'restaurant-outline' as const, label: 'Rotiserías' },
-  { icono: 'nutrition-outline' as const, label: 'Panaderías' },
-  { icono: 'file-tray-stacked-outline' as const, label: 'Despensas' },
-  { icono: 'cash-outline' as const, label: 'Autoservicios' },
+const TIPOS_COMERCIO: { icono: Icono; label: string }[] = [
+  { icono: 'storefront-outline', label: 'Kioscos' },
+  { icono: 'basket-outline', label: 'Almacenes' },
+  { icono: 'cart-outline', label: 'Supermercados' },
+  { icono: 'bag-handle-outline', label: 'Minimarkets' },
+  { icono: 'restaurant-outline', label: 'Rotiserías' },
+  { icono: 'nutrition-outline', label: 'Panaderías' },
+  { icono: 'file-tray-stacked-outline', label: 'Despensas' },
+  { icono: 'cash-outline', label: 'Autoservicios' },
 ];
 
-const HERO_IMAGE = IMAGENES_PRODUCTOS.bimbo[0] ?? IMAGENES_PRODUCTOS.citric[0] ?? null;
+function enFilas<T>(items: T[], columnas: number): T[][] {
+  const filas: T[][] = [];
+  for (let i = 0; i < items.length; i += columnas) filas.push(items.slice(i, i + columnas));
+  return filas;
+}
 
-export default function LandingPage() {
-  const { width } = useWindowDimensions();
-  const scrollRef = useRef<ScrollView>(null);
-  const [marcasY, setMarcasY] = useState(0);
-  const [ubicacionY, setUbicacionY] = useState(0);
-
-  const isDesktop = width >= 1000;
-  const isTablet = width >= 700;
-  const isNarrow = width < 380;
-
-  const brandCardWidth = isDesktop ? '23.5%' : isTablet ? '31.5%' : '100%';
-  const statCardWidth = isTablet ? '23.5%' : '48%';
-  const featureCardWidth = isDesktop ? '31.5%' : isTablet ? '48%' : '100%';
-  const stepCardWidth = isDesktop ? '23.5%' : isTablet ? '48%' : '100%';
-  const comercioWidth = isDesktop ? '22%' : isTablet ? '31%' : '48%';
-
-  const irACatalogos = () => router.push('/catalogos');
-  const irAMarcas = () => scrollRef.current?.scrollTo({ y: marcasY - 90, animated: true });
-  const irAUbicacion = () => scrollRef.current?.scrollTo({ y: ubicacionY - 90, animated: true });
-
+function FotoHero({
+  foto,
+  flex,
+  demora,
+  radio,
+  prioridad,
+}: {
+  foto: FotoPortada;
+  flex: number;
+  demora: number;
+  radio: number;
+  prioridad?: boolean;
+}) {
   return (
-    <View style={styles.root}>
-      {/* NAVBAR */}
-      <View style={[styles.navbar, { paddingTop: Platform.OS === 'web' ? 14 : 46 }]}>
-        <View style={styles.navbarInner}>
-          <View style={styles.navBrand}>
-            <Image source={require('../assets/full-advance-logo.png')} style={styles.navLogo} resizeMode="contain" />
-            {width >= 340 && <Text style={styles.navWordmark}>Full Advance</Text>}
-          </View>
-
-          {isDesktop && (
-            <View style={styles.navLinks}>
-              <TouchableOpacity onPress={irAMarcas} activeOpacity={0.7}>
-                <Text style={styles.navLinkText}>Marcas</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={irACatalogos} activeOpacity={0.7}>
-                <Text style={styles.navLinkText}>Catálogos</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={irAUbicacion} activeOpacity={0.7}>
-                <Text style={styles.navLinkText}>Ubicación</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          <TouchableOpacity style={styles.navCta} onPress={irACatalogos} activeOpacity={0.85}>
-            <Text style={styles.navCtaText}>Catálogos</Text>
-            <Ionicons name="arrow-forward" size={14} color="#fff" />
-          </TouchableOpacity>
+    <Aparecer demora={demora} desplazamiento={36} style={{ flex }}>
+      <View style={[styles.fotoHero, { borderRadius: radio }]}>
+        <Image
+          source={foto.src}
+          alt={foto.alt}
+          contentFit="cover"
+          contentPosition={foto.foco}
+          priority={prioridad ? 'high' : 'normal'}
+          transition={300}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={styles.fotoRotulo}>
+          <Text style={styles.fotoRotuloTexto}>{foto.marca}</Text>
         </View>
       </View>
+    </Aparecer>
+  );
+}
 
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* HERO */}
-        <View style={[styles.hero, { paddingTop: Platform.OS === 'web' ? 128 : 148 }]}>
-          <View style={styles.heroBlobPrimary} pointerEvents="none" />
-          <View style={styles.heroBlobInk} pointerEvents="none" />
-
-          <View style={[styles.heroInner, isDesktop && styles.heroInnerRow]}>
-            <View style={[styles.heroTextCol, isDesktop && styles.heroTextColDesktop]}>
-              <View style={[styles.badgePill, !isDesktop && styles.centerSelf]}>
-                <Ionicons name="ribbon-outline" size={13} color={COLORS.primary} />
-                <Text style={styles.badgePillText}>Distribuidor oficial</Text>
-              </View>
-
-              <Text
-                style={[
-                  styles.heroTitle,
-                  { fontSize: isDesktop ? 42 : isTablet ? 34 : isNarrow ? 27 : 30 },
-                  !isDesktop && styles.textCenter,
-                ]}
-              >
-                Distribuidora oficial en el sur de Mendoza
-              </Text>
-              <Text style={[styles.heroSubtitle, !isDesktop && styles.textCenter]}>
-                Bimbo · Palluzi · Angiola · Rikitos · Citric · Silvina
-              </Text>
-              <Text style={[styles.heroParagraph, !isDesktop && styles.textCenter]}>
-                Llevamos los productos de las marcas más elegidas a más de 1000 comercios,
-                con flota propia y logística pensada para que nunca te falte mercadería.
-              </Text>
-
-              <View style={[styles.heroButtons, !isDesktop && styles.centerRow, isNarrow && styles.heroButtonsStack]}>
-                <TouchableOpacity
-                  style={[styles.btnPrimaryShadow, isNarrow && styles.btnFullWidth]}
-                  onPress={irACatalogos}
-                  activeOpacity={0.88}
-                >
-                  <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.btnPrimary}>
-                    <Ionicons name="albums-outline" size={18} color="#fff" />
-                    <Text style={styles.btnPrimaryText}>Catálogos</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.btnOutline, isNarrow && styles.btnFullWidth]}
-                  onPress={irAMarcas}
-                  activeOpacity={0.85}
-                >
-                  <Ionicons name="grid-outline" size={18} color={COLORS.ink} />
-                  <Text style={styles.btnOutlineText}>Ver marcas</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={[styles.trustRow, !isDesktop && styles.centerRow]}>
-                {TRUST_BADGES.map((t) => (
-                  <View key={t.label} style={styles.trustItem}>
-                    <Ionicons name={t.icono} size={15} color={COLORS.primary} />
-                    <Text style={styles.trustText}>{t.label}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            {HERO_IMAGE && (
-              <View style={[styles.heroVisualCol, isDesktop && styles.heroVisualColDesktop]}>
-                <View style={styles.heroImageCard}>
-                  <ExpoImage source={HERO_IMAGE} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} />
-                </View>
-                <View style={styles.heroStatBadge}>
-                  <Text style={styles.heroStatBadgeValue}>+1000</Text>
-                  <Text style={styles.heroStatBadgeLabel}>comercios{'\n'}visitados</Text>
-                </View>
-              </View>
+function LogosMarcas() {
+  return (
+    <View>
+      <Text style={styles.logosTitulo}>Marcas que distribuimos</Text>
+      <View style={styles.logos}>
+        {MARCAS.map((m) => (
+          <View key={m.id} style={styles.logoCaja}>
+            {m.logo ? (
+              <Image
+                source={m.logo}
+                alt={m.nombre}
+                contentFit="contain"
+                style={{ height: 44, width: Math.min(44 * (m.logoRatio ?? 1), 62) }}
+              />
+            ) : (
+              <Text style={[styles.logoTexto, { color: m.color }]}>{m.nombre}</Text>
             )}
           </View>
+        ))}
+      </View>
+    </View>
+  );
+}
 
-          <View style={styles.scrollCue} pointerEvents="none">
-            <Ionicons name="chevron-down-outline" size={18} color={COLORS.textMuted} />
-          </View>
-        </View>
+export default function LandingPage() {
+  const { width, esEscritorio, esTablet } = useDiseno();
+  const { top } = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollView>(null);
+  const [posiciones, setPosiciones] = useState({ marcas: 0, proceso: 0, cobertura: 0 });
 
-        {/* ESTADÍSTICAS */}
-        <View style={styles.statsStrip}>
-          {ESTADISTICAS.map((e) => (
-            <View key={e.label} style={[styles.statCard, { width: statCardWidth }]}>
-              <View style={styles.statIconCircle}>
-                <Ionicons name={e.icono} size={22} color={COLORS.primary} />
-              </View>
-              <Text style={styles.statValor}>{e.valor}</Text>
-              <Text style={styles.statLabel}>{e.label}</Text>
+  const irA = (y: number) => scrollRef.current?.scrollTo({ y: Math.max(y - 84, 0), animated: true });
+  const irACatalogos = () => router.push('/catalogos');
+  const guardar = (clave: keyof typeof posiciones) => (e: { nativeEvent: { layout: { y: number } } }) => {
+    const y = e.nativeEvent.layout.y;
+    setPosiciones((p) => (p[clave] === y ? p : { ...p, [clave]: y }));
+  };
+
+  const espacio = esEscritorio ? 112 : esTablet ? 88 : 64;
+  const separacion = esEscritorio ? 24 : 18;
+  const radioFoto = esTablet ? 26 : 20;
+  const altoCollage = esEscritorio ? 560 : esTablet ? 520 : Math.min(width * 1.02, 430);
+  const desfase = esTablet ? 56 : 30;
+  const columnasMotivos = esEscritorio ? 3 : esTablet ? 2 : 1;
+
+  return (
+    <View style={styles.raiz}>
+      <BarraSuperior
+        enlaces={[
+          { label: 'Marcas', onPress: () => irA(posiciones.marcas) },
+          { label: 'Cómo trabajamos', onPress: () => irA(posiciones.proceso) },
+          { label: 'Cobertura', onPress: () => irA(posiciones.cobertura) },
+        ]}
+        accion={{ label: width < 360 ? 'Catálogos' : 'Ver catálogos', onPress: irACatalogos }}
+      />
+
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
+        {/* PORTADA */}
+        <View style={{ paddingTop: top + (esEscritorio ? 156 : esTablet ? 132 : 108), paddingBottom: esTablet ? 72 : 48 }}>
+          <Contenedor style={esEscritorio ? styles.heroFila : styles.heroColumna}>
+            <View style={esEscritorio ? styles.heroTexto : null}>
+              <Aparecer>
+                <Rotulo>Distribuidora oficial · Sur de Mendoza</Rotulo>
+              </Aparecer>
+              <Aparecer demora={90}>
+                <Titulo nivel={1} style={{ marginTop: esTablet ? 24 : 18 }}>
+                  Las marcas más elegidas, <Enfasis>directo a tu comercio.</Enfasis>
+                </Titulo>
+              </Aparecer>
+              <Aparecer demora={180}>
+                <Text style={[styles.bajada, esTablet && styles.bajadaGrande]}>
+                  Llevamos sus productos a más de 1000 comercios del sur de Mendoza, con flota propia y una
+                  logística pensada para que nunca te falte mercadería.
+                </Text>
+              </Aparecer>
+              <Aparecer demora={270} style={[styles.botones, !esTablet && styles.botonesApilados]}>
+                <Boton label="Ver catálogos" onPress={irACatalogos} flecha />
+                <Boton label="Conocé las marcas" onPress={() => irA(posiciones.marcas)} variante="contorno" />
+              </Aparecer>
+              {esEscritorio && (
+                <Aparecer demora={360} style={{ marginTop: 44 }}>
+                  <LogosMarcas />
+                </Aparecer>
+              )}
             </View>
-          ))}
+
+            <View style={[styles.collage, { height: altoCollage, gap: esTablet ? 16 : 10 }, esEscritorio && { flex: 1 }]}>
+              <View style={{ flex: 1.24, paddingBottom: desfase }}>
+                <FotoHero foto={FOTOS_HERO.principal} flex={1} demora={220} radio={radioFoto} prioridad />
+              </View>
+              <View style={{ flex: 1, paddingTop: desfase, gap: esTablet ? 16 : 10 }}>
+                <FotoHero foto={FOTOS_HERO.arriba} flex={1.12} demora={340} radio={radioFoto} prioridad />
+                <FotoHero foto={FOTOS_HERO.abajo} flex={1} demora={460} radio={radioFoto} />
+              </View>
+            </View>
+
+            {!esEscritorio && (
+              <Aparecer>
+                <LogosMarcas />
+              </Aparecer>
+            )}
+          </Contenedor>
         </View>
 
-        {/* MARCAS / CATÁLOGO */}
-        <View style={styles.section} onLayout={(ev) => setMarcasY(ev.nativeEvent.layout.y)}>
-          <Text style={styles.eyebrow}>CATÁLOGO</Text>
-          <Text style={styles.sectionTitle}>Nuestras marcas</Text>
-          <View style={styles.titleBar} />
-          <Text style={styles.sectionSubtitle}>
-            El catálogo completo de las marcas que distribuimos en toda la región
-          </Text>
+        {/* CIFRAS */}
+        <Contenedor>
+          <View style={styles.cifras}>
+            {CIFRAS.map((c, i) => {
+              const columnas = esTablet ? 4 : 2;
+              const primera = i % columnas === 0;
+              return (
+                <View
+                  key={c.label}
+                  style={[
+                    styles.cifra,
+                    { width: `${100 / columnas}%`, paddingVertical: esTablet ? 30 : 22 },
+                    !primera && styles.cifraConBorde,
+                    !primera && { paddingLeft: esTablet ? 26 : 18 },
+                  ]}
+                >
+                  <Text style={[styles.cifraValor, !esTablet && { fontSize: 25, lineHeight: 29 }]}>{c.valor}</Text>
+                  <Text style={styles.cifraLabel}>{c.label}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </Contenedor>
 
-          <View style={styles.brandGrid}>
-            {MARCAS.map((m) => (
-              <View key={m.nombre} style={[styles.brandCard, { width: brandCardWidth, borderTopColor: m.color }]}>
-                {m.logo ? (
-                  <Image source={m.logo} style={styles.brandLogoImg} resizeMode="contain" />
-                ) : (
-                  <View style={[styles.brandIconCircle, { backgroundColor: m.color }]}>
-                    <Ionicons name={m.icono} size={26} color="#fff" />
-                  </View>
-                )}
-                <Text style={styles.brandNombre}>{m.nombre}</Text>
-                <Text style={styles.brandDescripcion}>{m.descripcion}</Text>
-                <View style={[styles.brandChips, { marginTop: 12 }]}>
-                  {m.productos.map((p) => (
-                    <View key={p} style={[styles.chip, { borderColor: m.color }]}>
-                      <Text style={[styles.chipText, { color: m.color }]}>{p}</Text>
-                    </View>
+        {/* GÓNDOLA */}
+        <View style={[styles.gondola, { marginTop: espacio, paddingVertical: esTablet ? 64 : 44 }]}>
+          <Contenedor style={{ marginBottom: esTablet ? 40 : 28 }}>
+            <Rotulo>En tu góndola</Rotulo>
+            <Titulo nivel={3} style={{ marginTop: 12, maxWidth: 560 }}>
+              Algunos de los productos que llevamos a tu comercio.
+            </Titulo>
+          </Contenedor>
+          <Gondola packs={GONDOLA} />
+        </View>
+
+        {/* MARCAS */}
+        <View style={{ paddingVertical: espacio }} onLayout={guardar('marcas')}>
+          <Contenedor>
+            <View style={[styles.encabezado, esEscritorio && styles.encabezadoFila]}>
+              <Aparecer style={esEscritorio ? { flex: 1.25 } : null}>
+                <Rotulo>Nuestras marcas</Rotulo>
+                <Titulo style={{ marginTop: 16 }}>
+                  Seis marcas líderes, <Enfasis>un solo proveedor.</Enfasis>
+                </Titulo>
+              </Aparecer>
+              <Aparecer demora={120} style={esEscritorio ? { flex: 1, paddingBottom: 6 } : null}>
+                <Text style={styles.parrafo}>
+                  El catálogo completo de las marcas que distribuimos en toda la región, con sus líneas de producto
+                  y los catálogos para descargar.
+                </Text>
+                <View style={{ marginTop: 16 }}>
+                  <EnlaceFlecha label="Ver todos los catálogos" onPress={irACatalogos} color={COLORS.primary} />
+                </View>
+              </Aparecer>
+            </View>
+
+            <View style={{ gap: separacion, marginTop: esTablet ? 56 : 36 }}>
+              {enFilas(MARCAS, esTablet ? 2 : 1).map((fila, i) => (
+                <View key={i} style={[styles.fila, { gap: separacion }]}>
+                  {fila.map((m, j) => (
+                    <Aparecer key={m.id} demora={j * 110} style={{ flex: 1 }}>
+                      <TarjetaMarca marca={m} />
+                    </Aparecer>
                   ))}
                 </View>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          </Contenedor>
         </View>
 
         {/* CÓMO TRABAJAMOS */}
-        <View style={[styles.section, styles.sectionAlt]}>
-          <Text style={styles.eyebrow}>PROCESO</Text>
-          <Text style={styles.sectionTitle}>Cómo trabajamos</Text>
-          <View style={styles.titleBar} />
-          <Text style={styles.sectionSubtitle}>Del pedido a la entrega, todo bajo control</Text>
+        <View style={[styles.blanca, { paddingVertical: espacio }]} onLayout={guardar('proceso')}>
+          <Contenedor>
+            <Aparecer>
+              <Rotulo>Cómo trabajamos</Rotulo>
+              <Titulo style={{ marginTop: 16, maxWidth: 720 }}>
+                Del pedido a la entrega, <Enfasis>todo bajo control.</Enfasis>
+              </Titulo>
+            </Aparecer>
 
-          <View style={styles.stepGrid}>
-            {PROCESO.map((p) => (
-              <View key={p.numero} style={[styles.stepCard, { width: stepCardWidth }]}>
-                <Text style={styles.stepNumero}>{p.numero}</Text>
-                <View style={styles.stepIconCircle}>
-                  <Ionicons name={p.icono} size={20} color="#fff" />
-                </View>
-                <Text style={styles.stepTitulo}>{p.titulo}</Text>
-                <Text style={styles.stepTexto}>{p.texto}</Text>
-              </View>
-            ))}
-          </View>
+            <View style={[{ marginTop: esTablet ? 64 : 40 }, esEscritorio && styles.fila]}>
+              {PROCESO.map((p, i) => {
+                const ultimo = i === PROCESO.length - 1;
+                const nodo = (
+                  <View style={styles.nodo}>
+                    <Ionicons name={p.icono} size={22} color="#fff" />
+                  </View>
+                );
+                const texto = (
+                  <>
+                    <Text style={styles.pasoNumero}>Paso {String(i + 1).padStart(2, '0')}</Text>
+                    <Text style={styles.pasoTitulo}>{p.titulo}</Text>
+                    <Text style={styles.pasoTexto}>{p.texto}</Text>
+                  </>
+                );
+                return esEscritorio ? (
+                  <Aparecer key={p.titulo} demora={i * 120} style={{ flex: 1 }}>
+                    <View style={styles.pasoRiel}>
+                      {nodo}
+                      {!ultimo && <View style={styles.rielHorizontal} />}
+                    </View>
+                    <View style={{ paddingRight: 32, marginTop: 26 }}>{texto}</View>
+                  </Aparecer>
+                ) : (
+                  <Aparecer key={p.titulo} demora={i * 80} style={styles.pasoVertical}>
+                    <View style={{ alignItems: 'center' }}>
+                      {nodo}
+                      {!ultimo && <View style={styles.rielVertical} />}
+                    </View>
+                    <View style={{ flex: 1, paddingBottom: ultimo ? 0 : 34, paddingTop: 2 }}>{texto}</View>
+                  </Aparecer>
+                );
+              })}
+            </View>
+          </Contenedor>
+        </View>
+
+        {/* A QUIÉN LE LLEGAMOS */}
+        <View style={styles.oscura}>
+          {esEscritorio ? (
+            <View style={styles.oscuraFoto}>
+              <Image source={FOTO_GASTRONOMIA.src} alt={FOTO_GASTRONOMIA.alt} contentFit="cover" style={StyleSheet.absoluteFill} />
+              <LinearGradient
+                colors={[COLORS.espresso, 'rgba(34, 24, 20, 0.7)', 'rgba(34, 24, 20, 0)']}
+                locations={[0, 0.3, 0.72]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+            </View>
+          ) : (
+            <View style={{ height: esTablet ? 380 : 250 }}>
+              <Image source={FOTO_GASTRONOMIA.src} alt={FOTO_GASTRONOMIA.alt} contentFit="cover" style={StyleSheet.absoluteFill} />
+              <LinearGradient
+                colors={['rgba(34, 24, 20, 0)', COLORS.espresso]}
+                style={styles.oscuraFundido}
+              />
+            </View>
+          )}
+
+          <Contenedor>
+            <View style={[{ paddingTop: esEscritorio ? espacio : 28, paddingBottom: espacio }, esEscritorio && { maxWidth: 560 }]}>
+              <Aparecer>
+                <Rotulo claro>A quién le llegamos</Rotulo>
+                <Titulo claro style={{ marginTop: 16 }}>
+                  Del kiosco de barrio <Enfasis color={COLORS.kraft}>al supermercado.</Enfasis>
+                </Titulo>
+                <Text style={[styles.parrafo, styles.parrafoClaro, { marginTop: 18 }]}>
+                  Comercios de todo tipo confían en nuestra distribución.
+                </Text>
+              </Aparecer>
+
+              <Aparecer demora={120} style={styles.tipos}>
+                {TIPOS_COMERCIO.map((t) => (
+                  <View key={t.label} style={styles.tipo}>
+                    <Ionicons name={t.icono} size={19} color={COLORS.kraft} />
+                    <Text style={styles.tipoTexto}>{t.label}</Text>
+                  </View>
+                ))}
+              </Aparecer>
+
+              <Aparecer demora={200} style={{ marginTop: 34 }}>
+                <Text style={styles.notaGastronomia}>
+                  ¿Tenés un local de comidas? Mirá los panes de hamburguesa, panchos y tortillas de la línea
+                  gastronómica de Bimbo.
+                </Text>
+                <Boton
+                  label="Catálogo gastronómico"
+                  icono="document-text-outline"
+                  variante="blanco"
+                  onPress={() => abrirCatalogo(CATALOGO_GASTRONOMICO)}
+                  style={{ alignSelf: 'flex-start', marginTop: 18 }}
+                />
+              </Aparecer>
+            </View>
+          </Contenedor>
         </View>
 
         {/* POR QUÉ ELEGIRNOS */}
-        <View style={styles.section}>
-          <Text style={styles.eyebrow}>VENTAJAS</Text>
-          <Text style={styles.sectionTitle}>Por qué elegirnos</Text>
-          <View style={styles.titleBar} />
-          <Text style={styles.sectionSubtitle}>Compromiso, cercanía y logística propia</Text>
+        <View style={{ paddingVertical: espacio }}>
+          <Contenedor>
+            <Aparecer>
+              <Rotulo>Por qué elegirnos</Rotulo>
+              <Titulo style={{ marginTop: 16, maxWidth: 760 }}>
+                Compromiso, cercanía y <Enfasis>logística propia.</Enfasis>
+              </Titulo>
+            </Aparecer>
 
-          <View style={styles.featureGrid}>
-            {MOTIVOS.map((m) => (
-              <View key={m.titulo} style={[styles.featureCard, { width: featureCardWidth }]}>
-                <View style={styles.featureIconCircle}>
-                  <Ionicons name={m.icono} size={22} color={COLORS.primary} />
+            <View style={{ marginTop: esTablet ? 56 : 32, gap: esTablet ? 40 : 0 }}>
+              {enFilas(MOTIVOS, columnasMotivos).map((fila, i) => (
+                <View key={i} style={[styles.fila, { gap: esTablet ? 40 : 0 }]}>
+                  {fila.map((m, j) => (
+                    <Aparecer key={m.titulo} demora={j * 100} style={[styles.motivo, !esTablet && { paddingBottom: 26 }]}>
+                      <Ionicons name={m.icono} size={26} color={COLORS.primary} />
+                      <Text style={styles.motivoTitulo}>{m.titulo}</Text>
+                      <Text style={styles.motivoTexto}>{m.texto}</Text>
+                    </Aparecer>
+                  ))}
                 </View>
-                <View style={styles.featureTextBox}>
-                  <Text style={styles.featureTitulo}>{m.titulo}</Text>
-                  <Text style={styles.featureTexto}>{m.texto}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* TIPOS DE COMERCIO */}
-        <View style={[styles.section, styles.sectionAlt]}>
-          <Text style={styles.eyebrow}>CLIENTES</Text>
-          <Text style={styles.sectionTitle}>A quién le llegamos</Text>
-          <View style={styles.titleBar} />
-          <Text style={styles.sectionSubtitle}>Comercios de todo tipo confían en nuestra distribución</Text>
-
-          <View style={styles.comercioGrid}>
-            {TIPOS_COMERCIO.map((c) => (
-              <View key={c.label} style={[styles.comercioCard, { width: comercioWidth }]}>
-                <View style={styles.comercioIconCircle}>
-                  <Ionicons name={c.icono} size={20} color={COLORS.primary} />
-                </View>
-                <Text style={styles.comercioLabel}>{c.label}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* UBICACIÓN / COBERTURA */}
-        <View style={styles.section} onLayout={(ev) => setUbicacionY(ev.nativeEvent.layout.y)}>
-          <Text style={styles.eyebrow}>COBERTURA</Text>
-          <Text style={styles.sectionTitle}>Dónde estamos</Text>
-          <View style={styles.titleBar} />
-
-          <View style={[styles.locationRow, isTablet && styles.locationRowWide]}>
-            <View style={[styles.locationMapWrap, isTablet && styles.locationMapWrapWide]}>
-              <UbicacionMapa />
-            </View>
-
-            <View style={styles.locationTextBox}>
-              <Text style={styles.locationDireccion}>Sarmiento 4777, Las Paredes, San Rafael, Mendoza</Text>
-              <Text style={styles.locationTexto}>
-                Desde nuestro depósito distribuimos en todo el sur de Mendoza, llegando cada día
-                a más comercios gracias a nuestra flota propia de reparto.
-              </Text>
-              <View style={styles.locationBullets}>
-                <View style={styles.locationBulletItem}>
-                  <Ionicons name="navigate-outline" size={16} color={COLORS.primary} />
-                  <Text style={styles.locationBulletText}>Cobertura en todo el sur mendocino</Text>
-                </View>
-                <View style={styles.locationBulletItem}>
-                  <Ionicons name="car-outline" size={16} color={COLORS.primary} />
-                  <Text style={styles.locationBulletText}>Amplia flota propia de distribución</Text>
-                </View>
-                <View style={styles.locationBulletItem}>
-                  <Ionicons name="storefront-outline" size={16} color={COLORS.primary} />
-                  <Text style={styles.locationBulletText}>Más de 1000 negocios visitados</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* CTA FINAL */}
-        <LinearGradient colors={[COLORS.ink, COLORS.inkLight]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.ctaFinal}>
-          <Text style={styles.ctaTitulo}>¿Querés ver todo lo que tenemos?</Text>
-          <Text style={styles.ctaTexto}>
-            Descubrí el catálogo completo de productos de cada una de nuestras marcas.
-          </Text>
-          <TouchableOpacity style={styles.ctaBtn} onPress={irACatalogos} activeOpacity={0.85}>
-            <Ionicons name="albums-outline" size={18} color={COLORS.ink} />
-            <Text style={styles.ctaBtnText}>Ver catálogos</Text>
-          </TouchableOpacity>
-        </LinearGradient>
-
-        {/* FOOTER */}
-        <View style={styles.footer}>
-          <View style={[styles.footerColumns, isTablet && styles.footerColumnsRow]}>
-            <View style={[styles.footerCol, isTablet && { flex: 1.3 }]}>
-              <Text style={styles.footerMarca}>FULL ADVANCE</Text>
-              <Text style={styles.footerTexto}>
-                Distribuidora oficial en el sur de Mendoza. Llevamos las mejores marcas a tu
-                comercio con logística propia y atención personalizada.
-              </Text>
-            </View>
-
-            <View style={styles.footerCol}>
-              <Text style={styles.footerColTitle}>Marcas</Text>
-              {MARCAS.map((m) => (
-                <Text key={m.nombre} style={styles.footerLink}>{m.nombre}</Text>
               ))}
             </View>
-
-            <View style={styles.footerCol}>
-              <Text style={styles.footerColTitle}>Contacto</Text>
-              <View style={styles.footerDireccionRow}>
-                <Ionicons name="location-outline" size={14} color="#8A93A6" />
-                <Text style={styles.footerDireccion}>Sarmiento 4777, Las Paredes{'\n'}San Rafael, Mendoza</Text>
-              </View>
-              <TouchableOpacity style={styles.footerLoginRow} onPress={irACatalogos} activeOpacity={0.8}>
-                <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
-                <Text style={styles.footerLoginText}>Ver catálogos</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.footerDivider} />
-          <Text style={styles.footerCopy}>© {new Date().getFullYear()} Full Advance. Todos los derechos reservados.</Text>
+          </Contenedor>
         </View>
+
+        {/* COBERTURA */}
+        <View style={[styles.blanca, { paddingVertical: espacio }]} onLayout={guardar('cobertura')}>
+          <Contenedor style={esEscritorio ? [styles.fila, { gap: 64, alignItems: 'center' }] : { gap: 36 }}>
+            <Aparecer style={esEscritorio ? { flex: 0.9 } : null}>
+              <Rotulo>Cobertura</Rotulo>
+              <Titulo style={{ marginTop: 16 }}>
+                Desde San Rafael <Enfasis>a todo el sur mendocino.</Enfasis>
+              </Titulo>
+              <Text style={[styles.parrafo, { marginTop: 18 }]}>
+                Desde nuestro depósito distribuimos en todo el sur de Mendoza, llegando cada día a más comercios
+                gracias a nuestra flota propia de reparto.
+              </Text>
+
+              <View style={styles.direccion}>
+                <View style={styles.direccionIcono}>
+                  <Ionicons name="location" size={20} color={COLORS.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.direccionTitulo}>Av. Sarmiento 4777, Las Paredes</Text>
+                  <Text style={styles.direccionTexto}>San Rafael, Mendoza</Text>
+                </View>
+              </View>
+            </Aparecer>
+
+            <Aparecer demora={120} style={[styles.mapa, { height: esEscritorio ? 480 : esTablet ? 420 : 320 }, esEscritorio && { flex: 1.2 }]}>
+              <UbicacionMapa />
+            </Aparecer>
+          </Contenedor>
+        </View>
+
+        {/* CIERRE */}
+        <View style={[styles.blanca, { paddingBottom: espacio }]}>
+          <Contenedor>
+            <Aparecer>
+              <View style={[styles.cierre, { padding: esEscritorio ? 64 : esTablet ? 48 : 28, paddingBottom: esEscritorio ? 64 : 190 }]}>
+                <View style={esEscritorio ? { maxWidth: 500 } : null}>
+                  <Titulo claro>¿Querés ver todo lo que tenemos?</Titulo>
+                  <Text style={[styles.parrafo, styles.parrafoClaro, { marginTop: 16 }]}>
+                    Descubrí el catálogo completo de productos de cada una de nuestras marcas.
+                  </Text>
+                  <Boton
+                    label="Ver catálogos"
+                    variante="blanco"
+                    flecha
+                    onPress={irACatalogos}
+                    style={{ alignSelf: 'flex-start', marginTop: 28 }}
+                  />
+                </View>
+
+                <View style={[styles.cierrePacks, esEscritorio ? { right: 48 } : { left: 0, right: 0, justifyContent: 'center' }]}>
+                  {PACKS_CIERRE.map((p, i) => {
+                    const alto = (esEscritorio ? 268 : 190) * (i === 1 ? 0.86 : 1);
+                    return (
+                      <Image
+                        key={i}
+                        source={p.src}
+                        alt={p.alt}
+                        contentFit="contain"
+                        style={{
+                          height: alto,
+                          width: alto * p.ratio,
+                          marginLeft: i === 0 ? 0 : esEscritorio ? -34 : -22,
+                          zIndex: i === 1 ? 2 : 1,
+                          transform: [{ rotate: `${(i - 1) * 7}deg` }, { translateY: i === 1 ? 0 : 14 }],
+                        }}
+                      />
+                    );
+                  })}
+                </View>
+              </View>
+            </Aparecer>
+          </Contenedor>
+        </View>
+
+        <PieDePagina />
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  raiz: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  scrollContent: {
+  contenido: {
     flexGrow: 1,
   },
-  centerSelf: {
-    alignSelf: 'center',
+  fila: {
+    flexDirection: 'row',
   },
-  centerRow: {
-    justifyContent: 'center',
-  },
-  textCenter: {
-    textAlign: 'center',
+  blanca: {
+    backgroundColor: COLORS.surface,
   },
 
-  // NAVBAR
-  navbar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 20,
-    backgroundColor: 'rgba(250,249,246,0.92)',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    paddingBottom: 14,
-  },
-  navbarInner: {
+  // PORTADA
+  heroFila: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    maxWidth: 1180,
-    width: '100%',
-    alignSelf: 'center',
+    gap: 64,
   },
-  navBrand: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 9,
-  },
-  navLogo: {
-    width: 30,
-    height: 30,
-    borderRadius: 7,
-  },
-  navWordmark: {
-    fontFamily: FONTS.display,
-    color: COLORS.ink,
-    fontSize: 15,
-    letterSpacing: 0.2,
-  },
-  navLinks: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 28,
-  },
-  navLinkText: {
-    fontFamily: FONTS.bodySemi,
-    color: COLORS.textLight,
-    fontSize: 13.5,
-  },
-  navCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: COLORS.primary,
-    paddingVertical: 9,
-    paddingHorizontal: 16,
-    borderRadius: RADIUS.pill,
-  },
-  navCtaText: {
-    fontFamily: FONTS.bodySemi,
-    color: '#fff',
-    fontSize: 13,
-  },
-
-  // HERO
-  hero: {
-    paddingBottom: 44,
-    paddingHorizontal: 24,
-    overflow: 'hidden',
-  },
-  heroBlobPrimary: {
-    position: 'absolute',
-    top: -140,
-    right: -120,
-    width: 380,
-    height: 380,
-    borderRadius: 190,
-    backgroundColor: COLORS.primarySoft,
-  },
-  heroBlobInk: {
-    position: 'absolute',
-    bottom: -160,
-    left: -140,
-    width: 360,
-    height: 360,
-    borderRadius: 180,
-    backgroundColor: 'rgba(43,58,85,0.06)',
-  },
-  heroInner: {
-    maxWidth: 1180,
-    width: '100%',
-    alignSelf: 'center',
+  heroColumna: {
     gap: 40,
   },
-  heroInnerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 56,
+  heroTexto: {
+    flex: 1.08,
   },
-  heroTextCol: {
-    alignItems: 'center',
-  },
-  heroTextColDesktop: {
-    flex: 1,
-    alignItems: 'flex-start',
-  },
-  badgePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: COLORS.primarySoft,
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-    borderRadius: RADIUS.pill,
-    marginBottom: 18,
-  },
-  badgePillText: {
-    fontFamily: FONTS.bodySemi,
-    color: COLORS.primaryDark,
-    fontSize: 11.5,
-    letterSpacing: 0.3,
-  },
-  heroTitle: {
-    fontFamily: FONTS.display,
-    color: COLORS.ink,
-    maxWidth: 560,
-  },
-  heroSubtitle: {
-    marginTop: 12,
-    fontFamily: FONTS.bodySemi,
-    fontSize: 15,
-    color: COLORS.primary,
-    letterSpacing: 0.2,
-  },
-  heroParagraph: {
-    marginTop: 14,
+  bajada: {
+    marginTop: 20,
     fontFamily: FONTS.body,
-    fontSize: 14.5,
+    fontSize: 17,
+    lineHeight: 27,
     color: COLORS.textLight,
-    maxWidth: 480,
-    lineHeight: 22,
+    maxWidth: 540,
   },
-  heroButtons: {
+  bajadaGrande: {
+    marginTop: 26,
+    fontSize: 19.5,
+    lineHeight: 31,
+  },
+  botones: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 28,
     flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 34,
   },
-  heroButtonsStack: {
+  botonesApilados: {
     flexDirection: 'column',
-    width: '100%',
-    alignItems: 'center',
+    flexWrap: 'nowrap',
+    alignItems: 'stretch',
+    marginTop: 28,
   },
-  btnFullWidth: {
-    width: '100%',
-    maxWidth: 320,
-  },
-  btnPrimaryShadow: {
-    borderRadius: RADIUS.pill,
-    ...SHADOW.floating,
-  },
-  btnPrimary: {
+  collage: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: RADIUS.pill,
   },
-  btnPrimaryText: {
-    fontFamily: FONTS.bodySemi,
-    color: '#fff',
-    fontSize: 15,
-  },
-  btnOutline: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.surface,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: RADIUS.pill,
-  },
-  btnOutlineText: {
-    fontFamily: FONTS.bodySemi,
-    color: COLORS.ink,
-    fontSize: 15,
-  },
-  trustRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 18,
-    marginTop: 30,
-  },
-  trustItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  trustText: {
-    fontFamily: FONTS.bodyMedium,
-    color: COLORS.textLight,
-    fontSize: 12,
-  },
-  scrollCue: {
-    alignSelf: 'center',
-    marginTop: 40,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // HERO VISUAL
-  heroVisualCol: {
-    width: '100%',
-  },
-  heroVisualColDesktop: {
+  fotoHero: {
     flex: 1,
-  },
-  heroImageCard: {
-    width: '100%',
-    aspectRatio: 4 / 3,
-    borderRadius: RADIUS.xl,
     overflow: 'hidden',
-    backgroundColor: COLORS.border,
+    backgroundColor: COLORS.kraftSoft,
     ...SHADOW.floating,
   },
-  heroStatBadge: {
+  fotoRotulo: {
     position: 'absolute',
-    left: -14,
-    bottom: -18,
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    ...SHADOW.floating,
+    left: 12,
+    bottom: 12,
+    paddingVertical: 5,
+    paddingHorizontal: 11,
+    borderRadius: RADIUS.pill,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
   },
-  heroStatBadgeValue: {
-    fontFamily: FONTS.display,
-    color: COLORS.ink,
-    fontSize: 20,
-  },
-  heroStatBadgeLabel: {
-    fontFamily: FONTS.bodyMedium,
-    color: COLORS.textLight,
-    fontSize: 11,
-    marginTop: 2,
-  },
-
-  // ESTADÍSTICAS
-  statsStrip: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    justifyContent: 'center',
-    marginTop: 8,
-    marginHorizontal: 20,
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.xl,
-    padding: 18,
-    ...SHADOW.card,
-  },
-  statCard: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  statIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  statValor: {
-    fontFamily: FONTS.display,
-    fontSize: 15,
-    color: COLORS.text,
-    textAlign: 'center',
-  },
-  statLabel: {
-    fontFamily: FONTS.bodyMedium,
-    fontSize: 11,
-    color: COLORS.textLight,
-    textAlign: 'center',
-    marginTop: 2,
-  },
-
-  // SECCIONES
-  section: {
-    paddingHorizontal: 24,
-    paddingTop: 64,
-    paddingBottom: 16,
-  },
-  sectionAlt: {
-    backgroundColor: '#F4F2ED',
-  },
-  eyebrow: {
-    fontFamily: FONTS.bodySemi,
-    fontSize: 11.5,
-    color: COLORS.primary,
-    textAlign: 'center',
-    letterSpacing: 1.8,
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontFamily: FONTS.display,
-    fontSize: 24,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
-  titleBar: {
-    width: 48,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.primary,
-    alignSelf: 'center',
-    marginTop: 14,
-  },
-  sectionSubtitle: {
-    fontFamily: FONTS.body,
-    fontSize: 13.5,
-    color: COLORS.textLight,
-    textAlign: 'center',
-    marginTop: 12,
-    marginBottom: 32,
-  },
-
-  // MARCAS
-  brandGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'center',
-  },
-  brandCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    borderTopWidth: 3,
-    padding: 18,
-    alignItems: 'center',
-    ...SHADOW.card,
-  },
-  brandLogoImg: {
-    width: 90,
-    height: 56,
-    marginBottom: 10,
-    borderRadius: 8,
-  },
-  brandIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  brandNombre: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 16,
+  fotoRotuloTexto: {
+    fontFamily: FONTS.label,
+    fontSize: 12.5,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
     color: COLORS.ink,
   },
-  brandDescripcion: {
-    fontFamily: FONTS.body,
-    fontSize: 12,
-    color: COLORS.textLight,
-    textAlign: 'center',
-    marginTop: 4,
+  logosTitulo: {
+    fontFamily: FONTS.label,
+    fontSize: 13,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    color: COLORS.textMuted,
     marginBottom: 12,
   },
-  brandChips: {
+  logos: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
+  },
+  logoCaja: {
+    height: 66,
+    minWidth: 88,
+    paddingHorizontal: 12,
+    alignItems: 'center',
     justifyContent: 'center',
-  },
-  chip: {
+    borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderRadius: RADIUS.pill,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
   },
-  chipText: {
-    fontFamily: FONTS.bodySemi,
-    fontSize: 10.5,
+  logoTexto: {
+    fontFamily: FONTS.displayItalic,
+    fontSize: 18,
+    letterSpacing: -0.3,
+  },
+
+  // CIFRAS
+  cifras: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  cifra: {
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingRight: 12,
+  },
+  cifraConBorde: {
+    borderLeftWidth: 1,
+    borderLeftColor: COLORS.border,
+  },
+  cifraValor: {
+    fontFamily: FONTS.display,
+    fontSize: 32,
+    lineHeight: 36,
+    letterSpacing: -0.8,
+    color: COLORS.ink,
+  },
+  cifraLabel: {
+    marginTop: 6,
+    fontFamily: FONTS.body,
+    fontSize: 15,
+    lineHeight: 21,
+    color: COLORS.textLight,
+  },
+
+  // GÓNDOLA
+  gondola: {
+    backgroundColor: COLORS.surface,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: COLORS.border,
+  },
+
+  // ENCABEZADOS DE SECCIÓN
+  encabezado: {
+    gap: 20,
+  },
+  encabezadoFila: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 72,
+  },
+  parrafo: {
+    fontFamily: FONTS.body,
+    fontSize: 17,
+    lineHeight: 28,
+    color: COLORS.textLight,
+    maxWidth: 560,
+  },
+  parrafoClaro: {
+    color: 'rgba(255, 255, 255, 0.78)',
   },
 
   // PROCESO
-  stepGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'center',
-  },
-  stepCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    padding: 18,
-    ...SHADOW.card,
-    overflow: 'hidden',
-  },
-  stepNumero: {
-    position: 'absolute',
-    top: -8,
-    right: 10,
-    fontFamily: FONTS.display,
-    fontSize: 46,
-    color: 'rgba(21,22,30,0.05)',
-  },
-  stepIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  nodo: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: COLORS.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
   },
-  stepTitulo: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 14.5,
+  pasoRiel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rielHorizontal: {
+    flex: 1,
+    height: 2,
+    backgroundColor: COLORS.kraft,
+  },
+  pasoVertical: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+  rielVertical: {
+    flex: 1,
+    width: 2,
+    backgroundColor: COLORS.kraft,
+  },
+  pasoNumero: {
+    fontFamily: FONTS.label,
+    fontSize: 13,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    color: COLORS.cobre,
+  },
+  pasoTitulo: {
+    marginTop: 8,
+    fontFamily: FONTS.display,
+    fontSize: 21,
+    lineHeight: 26,
+    letterSpacing: -0.3,
     color: COLORS.ink,
-    marginBottom: 4,
   },
-  stepTexto: {
+  pasoTexto: {
+    marginTop: 8,
     fontFamily: FONTS.body,
-    fontSize: 12,
+    fontSize: 16,
+    lineHeight: 25,
     color: COLORS.textLight,
-    lineHeight: 18,
+  },
+
+  // A QUIÉN LE LLEGAMOS
+  oscura: {
+    backgroundColor: COLORS.espresso,
+    overflow: 'hidden',
+  },
+  oscuraFoto: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: '62%',
+    pointerEvents: 'none',
+  },
+  oscuraFundido: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 130,
+    pointerEvents: 'none',
+  },
+  tipos: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 30,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.14)',
+  },
+  tipo: {
+    width: '50%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.14)',
+  },
+  tipoTexto: {
+    fontFamily: FONTS.bodyMedium,
+    fontSize: 17,
+    color: '#fff',
+  },
+  notaGastronomia: {
+    fontFamily: FONTS.body,
+    fontSize: 15.5,
+    lineHeight: 25,
+    color: 'rgba(255, 255, 255, 0.7)',
+    maxWidth: 460,
   },
 
   // MOTIVOS
-  featureGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'center',
+  motivo: {
+    flex: 1,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(29, 22, 20, 0.16)',
   },
-  featureCard: {
+  motivoTitulo: {
+    marginTop: 16,
+    fontFamily: FONTS.display,
+    fontSize: 21,
+    lineHeight: 26,
+    letterSpacing: -0.3,
+    color: COLORS.ink,
+  },
+  motivoTexto: {
+    marginTop: 8,
+    fontFamily: FONTS.body,
+    fontSize: 16,
+    lineHeight: 25,
+    color: COLORS.textLight,
+  },
+
+  // COBERTURA
+  direccion: {
     flexDirection: 'row',
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
+    alignItems: 'center',
+    gap: 14,
+    marginTop: 30,
     padding: 16,
-    gap: 12,
-    ...SHADOW.card,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    maxWidth: 440,
   },
-  featureIconCircle: {
+  direccionIcono: {
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -966,216 +836,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  featureTextBox: {
-    flex: 1,
-  },
-  featureTitulo: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 14,
-    color: COLORS.ink,
-    marginBottom: 4,
-  },
-  featureTexto: {
-    fontFamily: FONTS.body,
-    fontSize: 12,
-    color: COLORS.textLight,
-    lineHeight: 18,
-  },
-
-  // TIPOS DE COMERCIO
-  comercioGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 14,
-    justifyContent: 'center',
-  },
-  comercioCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    paddingVertical: 18,
-    paddingHorizontal: 10,
-    alignItems: 'center',
-    ...SHADOW.card,
-  },
-  comercioIconCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: COLORS.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  comercioLabel: {
+  direccionTitulo: {
     fontFamily: FONTS.bodySemi,
-    fontSize: 12,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
-
-  // UBICACIÓN
-  locationRow: {
-    gap: 16,
-  },
-  locationRowWide: {
-    flexDirection: 'row',
-  },
-  locationMapWrap: {
-    borderRadius: RADIUS.xl,
-    overflow: 'hidden',
-    minHeight: 240,
-    ...SHADOW.card,
-  },
-  locationMapWrapWide: {
-    flex: 1,
-  },
-  locationTextBox: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.xl,
-    padding: 22,
-    ...SHADOW.card,
-  },
-  locationDireccion: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 14,
+    fontSize: 16.5,
     color: COLORS.ink,
   },
-  locationTexto: {
+  direccionTexto: {
+    marginTop: 2,
     fontFamily: FONTS.body,
-    fontSize: 12.5,
-    color: COLORS.textLight,
-    marginTop: 8,
-    lineHeight: 19,
-  },
-  locationBullets: {
-    marginTop: 14,
-    gap: 8,
-  },
-  locationBulletItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  locationBulletText: {
-    fontFamily: FONTS.bodyMedium,
-    fontSize: 12.5,
-    color: COLORS.text,
-  },
-
-  // CTA FINAL
-  ctaFinal: {
-    marginHorizontal: 16,
-    marginTop: 32,
-    borderRadius: RADIUS.xl,
-    padding: 32,
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  ctaTitulo: {
-    fontFamily: FONTS.display,
-    fontSize: 21,
-    color: '#fff',
-    textAlign: 'center',
-  },
-  ctaTexto: {
-    fontFamily: FONTS.body,
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.72)',
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 22,
-    maxWidth: 420,
-  },
-  ctaBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#fff',
-    paddingVertical: 14,
-    paddingHorizontal: 26,
-    borderRadius: RADIUS.pill,
-  },
-  ctaBtnText: {
-    fontFamily: FONTS.bodySemi,
-    color: COLORS.ink,
     fontSize: 15,
+    color: COLORS.textLight,
+  },
+  mapa: {
+    borderRadius: RADIUS.xl,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.divider,
   },
 
-  // FOOTER
-  footer: {
-    backgroundColor: COLORS.ink,
-    paddingVertical: 40,
-    paddingHorizontal: 24,
-    marginTop: 40,
+  // CIERRE
+  cierre: {
+    borderRadius: 32,
+    backgroundColor: COLORS.primary,
+    overflow: 'hidden',
   },
-  footerColumns: {
-    gap: 28,
-  },
-  footerColumnsRow: {
+  cierrePacks: {
+    position: 'absolute',
+    bottom: -44,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  footerCol: {
-    flex: 1,
-  },
-  footerMarca: {
-    fontFamily: FONTS.display,
-    color: '#fff',
-    fontSize: 16,
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  footerTexto: {
-    fontFamily: FONTS.body,
-    color: '#9CA0AC',
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  footerColTitle: {
-    fontFamily: FONTS.displayBold,
-    color: '#fff',
-    fontSize: 12.5,
-    marginBottom: 10,
-    letterSpacing: 0.4,
-  },
-  footerLink: {
-    fontFamily: FONTS.body,
-    color: '#9CA0AC',
-    fontSize: 12.5,
-    marginBottom: 8,
-  },
-  footerDireccionRow: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  footerDireccion: {
-    fontFamily: FONTS.body,
-    color: '#9CA0AC',
-    fontSize: 12,
-    lineHeight: 17,
-  },
-  footerLoginRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 14,
-  },
-  footerLoginText: {
-    fontFamily: FONTS.bodySemi,
-    color: COLORS.primary,
-    fontSize: 12.5,
-  },
-  footerDivider: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    marginTop: 32,
-    marginBottom: 16,
-  },
-  footerCopy: {
-    fontFamily: FONTS.body,
-    color: '#6B7280',
-    fontSize: 10.5,
-    textAlign: 'center',
+    alignItems: 'flex-end',
+    pointerEvents: 'none',
   },
 });
