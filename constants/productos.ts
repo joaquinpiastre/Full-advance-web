@@ -20,13 +20,13 @@ export type Foto = {
   alt: string;
   /**
    * 'cover' llena el recuadro (fotos); 'contain' muestra el pack entero;
-   * 'enmarcada' muestra la foto entera sobre su propio fondo desenfocado (para fotos chicas,
+   * 'enmarcada' muestra la foto entera, centrada sobre un fondo liso (para fotos chicas,
    * que se verían pixeladas si se estiraran).
    */
   fit?: 'cover' | 'contain' | 'enmarcada';
   /** Punto de la foto que tiene que quedar visible al recortar (como object-position). */
   foco?: ImageContentPosition;
-  /** Color de fondo del recuadro cuando el pack no lo llena. */
+  /** Color de fondo del recuadro cuando la foto o el pack no lo llenan. */
   fondo?: string;
 };
 
@@ -56,21 +56,21 @@ export const FOTOS_HERO: Record<'principal' | 'arriba' | 'abajo', FotoPortada> =
 
 // Foto de la sección de clientes (catálogo gastronómico de Bimbo)
 export const FOTO_GASTRONOMIA = {
-  src: require('../assets/products/bimbo/bimbo-hamburguesa-brioche.webp'),
-  alt: 'Hamburguesa de pollo crocante en pan brioche Bimbo',
+  src: require('../assets/products/bimbo/bimbo-hamburguesa-clasica.webp'),
+  alt: 'Hamburguesa doble con cheddar y lechuga en pan Bimbo con sésamo',
 };
 
 // Fotos de cada marca para su tarjeta (hasta tres: una grande y dos chicas)
 export const FOTOS_MARCA: Record<'bimbo' | 'palluzzi' | 'angiola' | 'rikitos' | 'citric' | 'silvina', Foto[]> = {
   bimbo: [
     {
-      src: require('../assets/products/bimbo/bimbo-hamburguesa-pan-de-papa.webp'),
-      alt: 'Hamburguesa doble en pan de papa Bimbo',
-      foco: { left: '42%', top: '50%' },
-    },
-    {
       src: require('../assets/products/bimbo/bimbo-tortillas.webp'),
       alt: 'Tacos armados con tortillas Rapiditas',
+    },
+    {
+      src: require('../assets/products/bimbo/bimbo-tortilla-wrap.webp'),
+      alt: 'Wrap de pollo y verduras armado con tortilla de trigo',
+      foco: { left: '46%', top: '50%' },
     },
     {
       src: require('../assets/products/bimbo/bimbo-pancho.webp'),
@@ -87,27 +87,28 @@ export const FOTOS_MARCA: Record<'bimbo' | 'palluzzi' | 'angiola' | 'rikitos' | 
       alt: 'Empanadas de carne Palluzzi sobre una tabla',
     },
     {
-      src: require('../assets/products/palluzi/palluzzi-alfajorcitos.webp'),
-      alt: 'Alfajorcitos de maicena Palluzzi',
-      foco: { left: '50%', top: '38%' },
+      src: require('../assets/products/palluzi/palluzzi-masas-secas.webp'),
+      alt: 'Masas secas y rosquitas bañadas Palluzzi',
     },
   ],
   angiola: [
     {
-      src: require('../assets/products/angiola/angiola-exhibidor.webp'),
-      alt: 'Exhibidores de alfajores Angiola rellenos con dulce de leche',
-    },
-    {
       src: require('../assets/products/angiola/angiola-pack-galletitas-chips.webp'),
       alt: 'Galletitas Angiola de vainilla con chips',
       fit: 'contain',
-      fondo: '#EEF1F8',
+      fondo: '#E7EFFB',
     },
     {
-      src: require('../assets/products/angiola/angiola-budines.webp'),
-      alt: 'Budines Angiola de chocolate, frutas y vainilla',
+      src: require('../assets/products/angiola/angiola-pack-galletitas-pistacho.webp'),
+      alt: 'Galletitas Angiola de pistacho bañadas',
       fit: 'contain',
-      fondo: '#F3ECE2',
+      fondo: '#ECF4E3',
+    },
+    {
+      src: require('../assets/products/angiola/angiola-alfajor-frutos-rojos.webp'),
+      alt: 'Alfajor Angiola sabor frutos rojos',
+      fit: 'contain',
+      fondo: '#FBE9EC',
     },
   ],
   rikitos: [
@@ -130,6 +131,7 @@ export const FOTOS_MARCA: Record<'bimbo' | 'palluzzi' | 'angiola' | 'rikitos' | 
       src: require('../assets/products/citric/citric-linea-jugos.webp'),
       alt: 'Línea de jugos Citric 100% exprimidos',
       fit: 'enmarcada',
+      fondo: '#DCEBFA',
     },
   ],
   silvina: [
@@ -143,11 +145,12 @@ export const FOTOS_MARCA: Record<'bimbo' | 'palluzzi' | 'angiola' | 'rikitos' | 
 
 // Fotos de repuesto: ya están optimizadas en assets/products/<marca>/ y todavía no se usan.
 // Sirven para sumar o intercambiar en las listas de arriba:
-//   bimbo:    bimbo-hamburguesa-clasica, bimbo-tortilla-wrap, bimbo-pack-pan-integral,
-//             bimbo-pack-artesano-hamburguesa
-//   palluzzi: palluzzi-noquis, palluzzi-pan-de-molde, palluzzi-pastafrola, palluzzi-masas-secas
-//   angiola:  angiola-alfajor-frutos-rojos, angiola-budin-porcion, angiola-pack-galletitas-pistacho,
-//             angiola-galletitas-linea, angiola-crackers-linea
+//   bimbo:    bimbo-pack-pan-integral, bimbo-pack-artesano-hamburguesa
+//   palluzzi: palluzzi-noquis, palluzzi-pan-de-molde, palluzzi-pastafrola
+//   angiola:  angiola-budin-porcion, angiola-galletitas-linea, angiola-crackers-linea
+// Estas otras quedaron afuera a propósito porque tienen fondo marrón (no usarlas de portada):
+//   bimbo-hamburguesa-brioche, bimbo-hamburguesa-pan-de-papa, palluzzi-alfajorcitos,
+//   angiola-exhibidor, angiola-budines
 
 // Packs de la góndola de la portada. `ratio` = ancho / alto del archivo;
 // `alto` = altura relativa en el estante (1 = el más alto), para que guarden escala entre sí.

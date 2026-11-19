@@ -46,9 +46,9 @@ function TarjetaCatalogo({ marca, catalogo }: Entrada) {
       <View style={styles.tapa}>
         <Image
           source={catalogo.tapa}
-          alt={`Tapa del ${catalogo.label.toLowerCase()} de ${marca.nombre}`}
+          alt={catalogo.tapaAlt ?? `Tapa del ${catalogo.label.toLowerCase()} de ${marca.nombre}`}
           contentFit="cover"
-          contentPosition="top"
+          contentPosition={catalogo.tapaFoco ?? 'top'}
           transition={250}
           style={[
             StyleSheet.absoluteFill,

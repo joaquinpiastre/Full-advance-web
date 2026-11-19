@@ -56,7 +56,7 @@ export default function UbicacionMapa() {
         atribucion.style.padding = '2px 8px';
       }
       const mosaicos = map.getPane('tilePane');
-      if (mosaicos) mosaicos.style.filter = 'saturate(0.55) sepia(0.14) contrast(0.96)';
+      if (mosaicos) mosaicos.style.filter = 'saturate(0.35) contrast(0.97) brightness(1.03)';
       mapRef.current = map;
     }
     init().catch(() => {});

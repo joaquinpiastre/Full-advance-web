@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, FONTS } from '../constants';
+import { COLORS, FONTS, tinta } from '../constants';
 import type { Pack } from '../constants/productos';
 import { soloWeb, useDiseno, useReducirMovimiento } from './ui';
 
@@ -152,12 +152,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: ALTO_ESTANTE,
-    backgroundColor: '#EFE5D6',
+    backgroundColor: COLORS.divider,
     borderTopWidth: 1,
-    borderTopColor: '#DCCFBB',
+    borderTopColor: COLORS.borderFuerte,
     borderBottomWidth: 1,
-    borderBottomColor: '#E3D7C5',
-    boxShadow: '0 8px 16px rgba(29, 22, 20, 0.07)',
+    borderBottomColor: COLORS.border,
+    boxShadow: `0 8px 16px ${tinta(0.07)}`,
     pointerEvents: 'none',
   },
   etiqueta: {

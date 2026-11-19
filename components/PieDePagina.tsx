@@ -42,7 +42,7 @@ export default function PieDePagina() {
           <View style={esTablet ? { flex: 1.1 } : null}>
             <Text style={styles.columnaTitulo}>Dónde estamos</Text>
             <View style={styles.direccion}>
-              <Ionicons name="location-outline" size={17} color={COLORS.kraft} style={{ marginTop: 3 }} />
+              <Ionicons name="location-outline" size={17} color={COLORS.rojoClaro} style={{ marginTop: 3 }} />
               <Text style={styles.item}>
                 Av. Sarmiento 4777, Las Paredes{'\n'}San Rafael, Mendoza
               </Text>
@@ -62,7 +62,7 @@ export default function PieDePagina() {
 
 const styles = StyleSheet.create({
   pie: {
-    backgroundColor: COLORS.espresso,
+    backgroundColor: COLORS.carbon,
     paddingTop: 64,
     paddingBottom: 32,
   },
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    color: COLORS.kraft,
+    color: COLORS.rojoClaro,
     marginBottom: 14,
   },
   marcas: {

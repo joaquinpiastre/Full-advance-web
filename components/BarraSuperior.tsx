@@ -6,7 +6,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, FONTS, MAX_WIDTH, RADIUS, SHADOW } from '../constants';
+import { COLORS, FONTS, MAX_WIDTH, RADIUS, SHADOW, tinta } from '../constants';
 import { LOGO_FULL_ADVANCE } from '../constants/marcas';
 import { Boton, soloWeb, useDiseno } from './ui';
 
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     paddingRight: 12,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(29, 22, 20, 0.07)',
+    borderColor: tinta(0.08),
     backgroundColor: 'rgba(255, 255, 255, 0.94)',
     ...SHADOW.card,
   },

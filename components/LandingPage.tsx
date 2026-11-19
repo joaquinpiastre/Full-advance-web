@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, FONTS, RADIUS, SHADOW } from '../constants';
+import { CARBON_RGB, COLORS, FONTS, RADIUS, SHADOW, tinta } from '../constants';
 import { CATALOGO_GASTRONOMICO, MARCAS } from '../constants/marcas';
 import { FOTO_GASTRONOMIA, FOTOS_HERO, GONDOLA, PACKS_CIERRE, type FotoPortada } from '../constants/productos';
 import BarraSuperior from './BarraSuperior';
@@ -365,18 +365,19 @@ export default function LandingPage() {
             <View style={styles.oscuraFoto}>
               <Image source={FOTO_GASTRONOMIA.src} alt={FOTO_GASTRONOMIA.alt} contentFit="cover" style={StyleSheet.absoluteFill} />
               <LinearGradient
-                colors={[COLORS.espresso, 'rgba(34, 24, 20, 0.7)', 'rgba(34, 24, 20, 0)']}
-                locations={[0, 0.3, 0.72]}
+                colors={[COLORS.carbon, `rgba(${CARBON_RGB}, 0.55)`, `rgba(${CARBON_RGB}, 0)`]}
+                locations={[0, 0.14, 0.36]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={StyleSheet.absoluteFill}
               />
+              <LinearGradient colors={[COLORS.carbon, `rgba(${CARBON_RGB}, 0)`]} style={styles.oscuraFundidoArriba} />
             </View>
           ) : (
             <View style={{ height: esTablet ? 380 : 250 }}>
               <Image source={FOTO_GASTRONOMIA.src} alt={FOTO_GASTRONOMIA.alt} contentFit="cover" style={StyleSheet.absoluteFill} />
               <LinearGradient
-                colors={['rgba(34, 24, 20, 0)', COLORS.espresso]}
+                colors={[`rgba(${CARBON_RGB}, 0)`, COLORS.carbon]}
                 style={styles.oscuraFundido}
               />
             </View>
@@ -387,7 +388,7 @@ export default function LandingPage() {
               <Aparecer>
                 <Rotulo claro>A quién le llegamos</Rotulo>
                 <Titulo claro style={{ marginTop: 16 }}>
-                  Del kiosco de barrio <Enfasis color={COLORS.kraft}>al supermercado.</Enfasis>
+                  Del kiosco de barrio <Enfasis color={COLORS.rojoClaro}>al supermercado.</Enfasis>
                 </Titulo>
                 <Text style={[styles.parrafo, styles.parrafoClaro, { marginTop: 18 }]}>
                   Comercios de todo tipo confían en nuestra distribución.
@@ -397,7 +398,7 @@ export default function LandingPage() {
               <Aparecer demora={120} style={styles.tipos}>
                 {TIPOS_COMERCIO.map((t) => (
                   <View key={t.label} style={styles.tipo}>
-                    <Ionicons name={t.icono} size={19} color={COLORS.kraft} />
+                    <Ionicons name={t.icono} size={19} color={COLORS.rojoClaro} />
                     <Text style={styles.tipoTexto}>{t.label}</Text>
                   </View>
                 ))}
@@ -584,7 +585,7 @@ const styles = StyleSheet.create({
   fotoHero: {
     flex: 1,
     overflow: 'hidden',
-    backgroundColor: COLORS.kraftSoft,
+    backgroundColor: COLORS.divider,
     ...SHADOW.floating,
   },
   fotoRotulo: {
@@ -708,7 +709,7 @@ const styles = StyleSheet.create({
   rielHorizontal: {
     flex: 1,
     height: 2,
-    backgroundColor: COLORS.kraft,
+    backgroundColor: COLORS.borderFuerte,
   },
   pasoVertical: {
     flexDirection: 'row',
@@ -717,14 +718,14 @@ const styles = StyleSheet.create({
   rielVertical: {
     flex: 1,
     width: 2,
-    backgroundColor: COLORS.kraft,
+    backgroundColor: COLORS.borderFuerte,
   },
   pasoNumero: {
     fontFamily: FONTS.label,
     fontSize: 13,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
-    color: COLORS.cobre,
+    color: COLORS.primary,
   },
   pasoTitulo: {
     marginTop: 8,
@@ -744,15 +745,25 @@ const styles = StyleSheet.create({
 
   // A QUIÉN LE LLEGAMOS
   oscura: {
-    backgroundColor: COLORS.espresso,
+    backgroundColor: COLORS.carbon,
     overflow: 'hidden',
   },
+  // La foto va entera, apoyada abajo a la derecha, y se funde con el fondo por arriba y por la izquierda.
   oscuraFoto: {
     position: 'absolute',
-    top: 0,
     bottom: 0,
     right: 0,
     width: '62%',
+    maxWidth: 1000,
+    aspectRatio: 1.5,
+    pointerEvents: 'none',
+  },
+  oscuraFundidoArriba: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: '24%',
     pointerEvents: 'none',
   },
   oscuraFundido: {
@@ -797,7 +808,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 24,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(29, 22, 20, 0.16)',
+    borderTopColor: tinta(0.14),
   },
   motivoTitulo: {
     marginTop: 16,

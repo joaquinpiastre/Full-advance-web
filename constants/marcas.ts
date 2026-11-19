@@ -1,12 +1,18 @@
 // Las marcas que distribuye Full Advance: una sola fuente de datos para la portada
 // y para la página de catálogos.
+import type { ImageContentPosition } from 'expo-image';
 import { FOTOS_MARCA, type Foto } from './productos';
 
 export type Catalogo = {
   label: string;
   /** PDF dentro de public/catalogos (termina en .pdf) o ruta de la app. */
   url: string;
+  /** Imagen de la tarjeta: la tapa del catálogo o una foto de adentro. */
   tapa: any;
+  /** Descripción de la imagen, si no es la tapa. */
+  tapaAlt?: string;
+  /** Qué parte de la imagen queda visible al recortar (por defecto, arriba). */
+  tapaFoco?: ImageContentPosition;
   /** Formato que se muestra en la tarjeta. */
   formato: 'PDF' | 'Online';
 };
@@ -37,17 +43,22 @@ export const MARCAS: Marca[] = [
       'Panes de molde, bollería, dulces y tortillas. Con las líneas Artesano, Fargo, Lactal, Rapiditas y Takis.',
     lineas: ['Pan de molde', 'Hamburguesas y panchos', 'Madalenas y budines', 'Vainillas', 'Tortillas', 'Snacks'],
     fotos: FOTOS_MARCA.bimbo,
+    // Las tapas de los dos PDF de Bimbo son marrones: en su lugar va una foto de adentro de cada uno.
     catalogos: [
       {
         label: 'Catálogo de productos',
         url: '/catalogos/bimbo-productos.pdf',
-        tapa: require('../assets/catalogos/bimbo-productos.webp'),
+        tapa: require('../assets/products/bimbo/bimbo-sandwich.webp'),
+        tapaAlt: 'Sándwich en pan integral Bimbo, del catálogo de productos',
+        tapaFoco: { left: '50%', top: '60%' },
         formato: 'PDF',
       },
       {
         label: 'Catálogo gastronómico',
         url: '/catalogos/bimbo-gastronomico.pdf',
-        tapa: require('../assets/catalogos/bimbo-gastronomico.webp'),
+        tapa: require('../assets/products/bimbo/bimbo-hamburguesa-clasica.webp'),
+        tapaAlt: 'Hamburguesa doble con cheddar, del catálogo gastronómico de Bimbo',
+        tapaFoco: 'center',
         formato: 'PDF',
       },
     ],

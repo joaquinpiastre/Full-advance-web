@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { BREAKPOINTS, COLORS, FONTS, MAX_WIDTH, RADIUS } from '../constants';
+import { BREAKPOINTS, COLORS, FONTS, MAX_WIDTH, RADIUS, tinta } from '../constants';
 
 export type Icono = keyof typeof Ionicons.glyphMap;
 
@@ -68,8 +68,8 @@ export function Contenedor({ children, style }: { children: ReactNode; style?: S
 export function Rotulo({ children, claro, style }: { children: ReactNode; claro?: boolean; style?: StyleProp<ViewStyle> }) {
   return (
     <View style={[styles.rotulo, style]}>
-      <View style={[styles.rotuloMarca, claro && { backgroundColor: COLORS.kraft }]} />
-      <Text style={[styles.rotuloTexto, claro && { color: COLORS.kraft }]}>{children}</Text>
+      <View style={[styles.rotuloMarca, claro && { backgroundColor: COLORS.rojoClaro }]} />
+      <Text style={[styles.rotuloTexto, claro && { color: COLORS.rojoClaro }]}>{children}</Text>
     </View>
   );
 }
@@ -119,8 +119,8 @@ type Variante = 'primario' | 'oscuro' | 'blanco' | 'contorno' | 'contornoClaro';
 const VARIANTES: Record<Variante, { fondo: string; fondoHover: string; texto: string; borde: string }> = {
   primario: { fondo: COLORS.primary, fondoHover: COLORS.primaryDark, texto: '#fff', borde: COLORS.primary },
   oscuro: { fondo: COLORS.ink, fondoHover: COLORS.inkLight, texto: '#fff', borde: COLORS.ink },
-  blanco: { fondo: '#fff', fondoHover: COLORS.kraftSoft, texto: COLORS.ink, borde: '#fff' },
-  contorno: { fondo: 'transparent', fondoHover: '#fff', texto: COLORS.ink, borde: 'rgba(29,22,20,0.22)' },
+  blanco: { fondo: '#fff', fondoHover: COLORS.divider, texto: COLORS.ink, borde: '#fff' },
+  contorno: { fondo: 'transparent', fondoHover: '#fff', texto: COLORS.ink, borde: tinta(0.22) },
   contornoClaro: { fondo: 'transparent', fondoHover: 'rgba(255,255,255,0.1)', texto: '#fff', borde: 'rgba(255,255,255,0.36)' },
 };
 

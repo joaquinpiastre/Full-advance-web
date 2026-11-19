@@ -14,8 +14,7 @@ function Tesela({ foto, flex, zoom }: { foto: Foto; flex: number; zoom?: boolean
   const entero = foto.fit === 'contain';
   if (foto.fit === 'enmarcada') {
     return (
-      <View style={[styles.tesela, { flex, backgroundColor: COLORS.espresso }]}>
-        <Image source={foto.src} alt="" contentFit="cover" blurRadius={26} style={[StyleSheet.absoluteFill, { transform: [{ scale: 1.25 }], opacity: 0.85 }]} />
+      <View style={[styles.tesela, { flex, backgroundColor: foto.fondo ?? COLORS.divider }]}>
         <View style={styles.marcoCentro}>
           <View style={styles.marco}>
             <Image source={foto.src} alt={foto.alt} contentFit="cover" transition={250} style={StyleSheet.absoluteFill} />
@@ -75,7 +74,7 @@ export default function TarjetaMarca({ marca }: { marca: Marca }) {
             <Titulo nivel={3}>{marca.nombre}</Titulo>
             {marca.etiqueta && (
               <View style={styles.sello}>
-                <Ionicons name="leaf-outline" size={12} color={COLORS.cobre} />
+                <Ionicons name="leaf-outline" size={12} color={COLORS.verde} />
                 <Text style={styles.selloTexto}>{marca.etiqueta}</Text>
               </View>
             )}
@@ -181,14 +180,14 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     paddingHorizontal: 9,
     borderRadius: RADIUS.pill,
-    backgroundColor: COLORS.kraftSoft,
+    backgroundColor: COLORS.verdeSoft,
   },
   selloTexto: {
     fontFamily: FONTS.label,
     fontSize: 12,
     letterSpacing: 1,
     textTransform: 'uppercase',
-    color: COLORS.cobre,
+    color: COLORS.verde,
   },
   descripcion: {
     marginTop: 12,
